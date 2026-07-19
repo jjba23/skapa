@@ -1,0 +1,16 @@
+
++----------------------------------------------------------------------------+
+Skapa:
+    Project scaffolding and templating tool. Quick-start your new projects with many of the ready templates.
+
+
+    See more at: https://codeberg.org/jjba23/skapa
+    Software licensed under the GNU AGPL v3 or newer.
+
+USAGE: skapa [OPTIONS]
+OPTIONS:
+
+    -h, --help
+        Display this help message and exit.
+
++----------------------------------------------------------------------------+
