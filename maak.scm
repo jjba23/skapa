@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with skapa.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (skapa)
+(define-module (maak)
   #:declarative? #t
   #:use-module (ice-9 string-fun)
   #:use-module (ice-9 textual-ports)
