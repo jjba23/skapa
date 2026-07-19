@@ -57,6 +57,20 @@
                               (string-append share "/resources"))
                 (install-file "scripts/skapa" bin)
                 (chmod (string-append bin "/skapa") #o755))))
+          (add-after 'install-program-files 'wrap-program
+            (lambda _
+              (let ((deps (list #$guile-scriba
+                                #$guile-json-4
+                                #$output)))
+                (wrap-program (string-append #$output "/bin/skapa")
+                  `("GUILE_LOAD_PATH" ":" prefix
+                    ,(map (lambda (dir)
+                            (string-append dir "/share/guile/site/3.0")) deps))
+                  `("GUILE_LOAD_COMPILED_PATH" ":" prefix
+                    ,(map (lambda (dir)
+                            (string-append dir "/lib/guile/3.0/site-ccache"))
+                          deps))))))
+
           (add-after 'unpack 'fix-paths
             (lambda* (#:key inputs #:allow-other-keys)
               (for-each (match-lambda
@@ -72,12 +86,16 @@
                           ("dirname " "dirname" "~s ")
                           ("getopt " "getopt" "~s ")
                           ("exec guile " "guile" "exec ~s "))))))))
-    (propagated-inputs (list guile-scriba))
-    (inputs (list guile-3.0 bash-minimal coreutils util-linux guile-scriba))
+    (inputs (list guile-3.0
+                  bash-minimal
+                  coreutils
+                  util-linux
+                  guile-scriba
+                  guile-json-4))
     (home-page "https://codeberg.org/jjba23/skapa")
-    (synopsis "")
+    (synopsis "Interactive CLI wizard project scaffolder")
     (description
-     "")
+     "A lightweight command-line project scaffolder featuring a template system.")
     (license license:gpl3+)))
 
 skapa

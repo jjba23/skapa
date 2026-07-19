@@ -152,7 +152,7 @@ and safely attempts to commit the structure to the underlying file system."
                        (if (member t
                                    '("o" "p" "O" "P")) t
                            (begin
-                             (log-info s
+                             (log-warning s
                               "Invalid layout. Please select 'o' or 'p'.
 ")
                              (loop)))))))
