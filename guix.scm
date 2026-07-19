@@ -72,7 +72,8 @@
                           ("dirname " "dirname" "~s ")
                           ("getopt " "getopt" "~s ")
                           ("exec guile " "guile" "exec ~s "))))))))
-    (inputs (list guile-3.0 bash-minimal coreutils util-linux))
+    (propagated-inputs (list guile-scriba))
+    (inputs (list guile-3.0 bash-minimal coreutils util-linux guile-scriba))
     (home-page "https://codeberg.org/jjba23/skapa")
     (synopsis "")
     (description

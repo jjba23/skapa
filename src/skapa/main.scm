@@ -18,10 +18,12 @@
 (define-module (skapa main)
   #:declarative? #t
   #:use-module (ice-9 getopt-long)
+  #:use-module (scriba scriba)
+  #:use-module (scriba auto)
   #:export (main))
 
+(define s (scriba-auto-logger))
 (define* (main #:key (args (command-line)))
-  
   (let* ((_ (begin
               (newline)
               (write args)
@@ -32,4 +34,4 @@
          (options (getopt-long args option-spec))
          (resources (option-ref options
                                 'resources #f)))
-    (log-info "Skapa: Project Templater")))
+    (log-info s "Skapa: Project Templater")))

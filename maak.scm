@@ -100,24 +100,11 @@
              (~ "docker.io/jjba23/~a:~a" project-name latest-tag))
        #:verbose? #t)))
 
-(define (hot-reload)
-  "Hot-reloading developer's setup."
-  (manifest-shell (list "watchexec 'skapa --list'"
-                        "--clear"
-                        (~ "--exts ~a"
-                           (string-join (map symbol->string
-                                             hot-reload-file-types) ","))
-                        "--on-busy-update=restart"
-                        "--shell bash"
-                        "--watch .")))
-
-(define (hr)
-  "Alias to hot-reloading."
-  (hot-reload))
-
-(define (dev)
-  "Developer's setup."
-  (hot-reload))
+(define (dev-run)
+  (time-machine-manifest-shell (list
+                                "guile -L ./src -c '((@(skapa main) main))'"
+                                "--resources ./resources")
+                               #:verbose? #t))
 
 (define (run)
   "Run skapa."

@@ -40,5 +40,6 @@
                           direvent
                           texinfo
                           watchexec
+                          guile-scriba
                           guile-documenta
                           guile-ares-rs))
