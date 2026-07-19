@@ -18,9 +18,6 @@
 (define-module (skapa main)
   #:declarative? #t
   #:use-module (ice-9 getopt-long)
-  #:use-module (skapa defaults)
-  #:use-module (skapa prelude)
-  #:use-module (skapa renderer)
   #:export (main))
 
 (define* (main #:key (args (command-line)))
