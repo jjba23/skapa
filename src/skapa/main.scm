@@ -21,23 +21,15 @@
   #:export (main))
 
 (define* (main #:key (args (command-line)))
-
+  
   (let* ((_ (begin
               (newline)
               (write args)
               (newline)))
-         (option-spec '((locale (single-char #\l)
-                                (value #t))
-                        (destination (single-char #\o)
-                                     (value #t))
-                        (resources (single-char #\r)
-                                   (value #t))
-                        (file (single-char #\p)
-                              (value #t)
-                              (required? #t))))
+         (option-spec '((resources (single-char #\r)
+                                   (value #t))))
 
          (options (getopt-long args option-spec))
          (resources (option-ref options
                                 'resources #f)))
-    (log-info
-     "Skapa: Project Templater")))
+    (log-info "Skapa: Project Templater")))
