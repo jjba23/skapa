@@ -40,13 +40,7 @@
                               (required? #t))))
 
          (options (getopt-long args option-spec))
-         (file (option-ref options
-                           'file #f))
-         (destination (option-ref options
-                                  'destination "./dist"))
          (resources (option-ref options
-                                'resources #f))
-         (locale (option-ref options
-                             'locale "en")))
+                                'resources #f)))
     (log-info
      "Skapa: Project Templater")))
