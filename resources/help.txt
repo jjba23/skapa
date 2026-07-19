@@ -13,4 +13,11 @@ OPTIONS:
     -h, --help
         Display this help message and exit.
 
+          ( "  -n, --name NAME      Name of the project\n")
+          ( "  -c, --creator NAME   Name of the creator\n")
+          ( "  -t, --type TYPE      Project type ('o' for open-source, 'p' for proprietary)\n")
+          ( "  -l, --license LIC    License name (for open-source)\n")
+          ( "  -o, --owner OWNER    Copyright owner (for proprietary)\n")
+          ( "  -h, --help           Show this configuration panel\n")
+
 +----------------------------------------------------------------------------+
