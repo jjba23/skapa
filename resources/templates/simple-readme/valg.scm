@@ -1,8 +1,8 @@
-'((name . "Fullstack Web App")
+((name . "Fullstack Web App")
   (prompts . (((key . "project-name")
                (prompt . "Project name")
-               (type . string)
-               (default . "my-web-app"))
+               (required? . #t)
+               (type . string))
 
               ((key . "framework")
                (prompt . "Backend Framework")

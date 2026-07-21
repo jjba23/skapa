@@ -43,7 +43,7 @@
                                                avail-templates
                                                (car avail-templates)))))
 
-         (template-dir (format #f "~a/templates/~a" resources template-name))
+         (template-dir (format #f "~a/templates/~a/contents" resources template-name))
          (valg-path (format #f "~a/valg.scm" template-dir))
 
          (valg (load-valg valg-path))
