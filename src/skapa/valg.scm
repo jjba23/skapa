@@ -90,24 +90,42 @@
         (else (format #t "Invalid choice. Pick one of: ~a\n" choices-str)
               (prompt-choice question choices default-val))))))
 
+(define (normalize-symbol val)
+  "Converts strings, symbols, or quoted lists like '(quote foo) into a plain symbol."
+  (cond
+    ((symbol? val)
+     val)
+    ((string? val)
+     (string->symbol val))
+    ((and (pair? val)
+          (eq? (car val)
+               'quote))
+     (cadr val))
+    (else (string->symbol (format #f "~a" val)))))
+
 (define (eval-prompt prompt-spec cli-options)
   "Evaluates a single prompt specification pair from the valg."
-  (let* ((k (assq-ref prompt-spec
-                       'key))
-         (key (if (symbol? k) k
-                  (string->symbol k)))
-         (prompt-text (assq-ref prompt-spec
-                                 'prompt))
-         (type (assq-ref prompt-spec
-                          'type))
-         (default (assq-ref prompt-spec
-                             'default))
+  (let* ((raw-key (or (assq-ref prompt-spec
+                                'key)
+                      (assoc-ref prompt-spec "key")))
+         (key (normalize-symbol raw-key))
+         (prompt-text (or (assq-ref prompt-spec
+                                    'prompt)
+                          (assoc-ref prompt-spec "prompt")))
+         (type (normalize-symbol (or (assq-ref prompt-spec
+                                               'type)
+                                     (assoc-ref prompt-spec "type"))))
+         (default (or (assq-ref prompt-spec
+                                'default)
+                      (assoc-ref prompt-spec "default")))
          (required? (or (assq-ref prompt-spec
-                                   'required?)
+                                  'required?)
                         (assq-ref prompt-spec
-                                   'required) #f))
-         (choices (assq-ref prompt-spec
-                             'choices))
+                                  'required)
+                        (assoc-ref prompt-spec "required?") #f))
+         (choices (or (assq-ref prompt-spec
+                                'choices)
+                      (assoc-ref prompt-spec "choices")))
          (cli-val (and cli-options
                        (option-ref cli-options key #f))))
     (cons key
@@ -124,7 +142,8 @@
 (define (run-valg-prompts valg cli-options)
   "Iterates over prompts in the valg and collects key-value context."
   (let ((prompts (or (assq-ref valg
-                                'prompts)
+                               'prompts)
                      '())))
     (map (lambda (p)
+           (log-debug s "PROMPT: ~a" p)
            (eval-prompt p cli-options)) prompts)))
