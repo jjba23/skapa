@@ -10,6 +10,53 @@ Project scaffolding and templating tool. Quick-start your new projects with many
 
 If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee ☕]] so I can continue with a lot of motivation.
 
+-------------
+
+Example Template Valg in Action, drop a new template folder with its own valg.scm:
+
+~resources/templates/web-app/valg.scm~
+
+#+begin_src scheme
+'((name . "Fullstack Web App")
+  (prompts . (((key . "project-name")
+               (prompt . "Project name")
+               (type . string)
+               (default . "my-web-app"))
+
+              ((key . "framework")
+               (prompt . "Frontend Framework")
+               (type . choice)
+               (choices . ("vue" "react" "htmx"))
+               (default . "htmx"))
+
+              ((key . "include-db")
+               (prompt . "Include PostgreSQL configuration?")
+               (type . boolean)
+               (default . #t))
+
+              ((key . "license")
+               (prompt . "Choose software license")
+               (type . choice)
+               (choices . ("mit" "gpl3" "apache2"))
+               (default . "mit")))))
+#+end_src
+
+~<: ... :>~ Expressions Inside Template Files
+In any file (e.g., README.md or config.json):
+
+#+begin_src markdown
+# <: project-name :>
+
+Framework: <: framework :>
+
+<: (if include-db "## Database Setup\nConfigured for PostgreSQL." "## Database\nNo database selected.") :>
+
+## License
+<: license-body :>
+#+end_src
+
+
+
 --------------
 
 * Licensing

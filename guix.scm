@@ -57,7 +57,10 @@
                               (string-append share "/resources"))
                 (mkdir-p (string-append share "/resources/templates"))
                 (copy-recursively "resources/templates"
-                              (string-append share "/resources/templates"))
+                                  (string-append share "/resources/templates"))
+                (mkdir-p (string-append share "/resources/licenses"))
+                (copy-recursively "resources/licenses"
+                                  (string-append share "/resources/licenses"))
                 (install-file "scripts/skapa" bin)
                 (chmod (string-append bin "/skapa") #o755))))
           (add-after 'install-program-files 'wrap-program
@@ -91,7 +94,7 @@
                           ("exec guile " "guile" "exec ~s "))))))))
     (inputs (list guile-3.0
                   bash-minimal
-                  coreutils
+                  coreutils-minimal
                   util-linux
                   guile-scriba
                   guile-json-4))

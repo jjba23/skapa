@@ -1,0 +1,93 @@
+;;; Skapa
+
+;; Copyright © Josep Jesus Bigorra Algaba
+
+;; skapa is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU Affero General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; skapa is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU Affero General Public License for more details.
+
+;; You should have received a copy of the GNU Affero General Public License
+;; along with skapa. If not, see <https://www.gnu.org/licenses/>.
+
+(define-module (skapa engine)
+  #:declarative? #t
+  #:use-module (ice-9 regex)
+  #:use-module (ice-9 textual-ports)
+  #:use-module (srfi srfi-1)
+  #:export (render-template-string render-template-directory))
+
+(define (alist->eval-environment context-alist)
+  "Creates a top-level evaluation sandbox populated with variables from context."
+  (let ((m (make-sandbox-module)))
+    (for-each (lambda (pair)
+                (module-define! m
+                                (string->symbol (car pair))
+                                (cdr pair))) context-alist) m))
+
+(define (eval-rune-token token-str context-alist)
+  "Parses and evaluates an embedded Scheme expression within the template context."
+  (catch #t
+         (lambda ()
+           (let* ((expr (read-from-string token-str))
+                  (env (alist->eval-environment context-alist))
+                  (res (eval expr env)))
+             (cond
+               ((boolean? res)
+                (if res "true" "false"))
+               ((null? res)
+                "")
+               (else (format #f "~a" res)))))
+         (lambda (key . args)
+           (format #f "[[Template Error (~a): ~a]]" key token-str))))
+
+(define rune-regex
+  (make-regexp "<:[[:space:]]*(.*?)[[:space:]]*:>"))
+
+(define (render-template-string template-str context-alist)
+  "Replaces all <: scheme-expression :> occurrences with their evaluated results."
+  (let loop
+    ((offset 0)
+     (acc ""))
+    (let ((m (regexp-exec rune-regex template-str offset)))
+      (if (not m)
+          (string-append acc
+                         (substring template-str offset))
+          (let* ((start (match:start m 0))
+                 (end (match:end m 0))
+                 (expr-str (match:substring m 1))
+                 (prefix (substring template-str offset start))
+                 (evaluated (eval-rune-token expr-str context-alist)))
+            (loop end
+                  (string-append acc prefix evaluated)))))))
+
+(define (render-template-directory src-dir dest-dir context-alist)
+  "Recursively copies and renders template directory structures."
+  (mkdir-p dest-dir)
+  (let ((entries (scandir src-dir
+                          (lambda (f)
+                            (not (member f
+                                         '("." "..")))))))
+    (for-each (lambda (entry)
+                (let* ((rendered-entry (render-template-string entry
+                                                               context-alist))
+                       (src-path (format #f "~a/~a" src-dir entry))
+                       (dest-path (format #f "~a/~a" dest-dir rendered-entry)))
+                  (if (eq? 'directory
+                           (stat:type (stat src-path)))
+                      (render-template-directory src-path dest-path
+                                                 context-alist)
+                      (let* ((raw (call-with-input-file src-path
+                                    get-string-all))
+                             (rendered (render-template-string raw
+                                                               context-alist)))
+                        (call-with-output-file dest-path
+                          (lambda (port)
+                            (display rendered port)))))))
+              (or entries
+                  '()))))

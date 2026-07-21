@@ -1,0 +1,102 @@
+;;; Skapa
+
+;; Copyright © Josep Jesus Bigorra Algaba
+
+;; skapa is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU Affero General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; skapa is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU Affero General Public License for more details.
+
+;; You should have received a copy of the GNU Affero General Public License
+;; along with skapa. If not, see <https://www.gnu.org/licenses/>.
+
+(define-module (skapa valg)
+  #:declarative? #t
+  #:use-module (ice-9 rdelim)
+  #:use-module (srfi srfi-1)
+  #:export (load-valg run-valg-prompts))
+
+(define (load-valg valg-path)
+  "Loads a template valg file if it exists, returning an alist."
+  (if (file-exists? valg-path)
+      (with-input-from-file valg-path
+        read)
+      '()))
+
+(define (prompt-boolean question default-val)
+  "Prompts user for a yes/no answer, defaulting to default-val (#t or #f)."
+  (let* ((default-str (if default-val "Y/n" "y/N"))
+         (msg (format #f "~a [~a]: " question default-str)))
+    (display msg)
+    (force-output)
+    (let ((input (string-downcase (string-trim-both (read-line)))))
+      (cond
+        ((string-null? input)
+         default-val)
+        ((member input
+                 '("y" "yes"))
+         #t)
+        ((member input
+                 '("n" "no"))
+         #f)
+        (else (display "Please enter 'y' or 'n'.\n")
+              (prompt-boolean question default-val))))))
+
+(define (prompt-choice question choices default-val)
+  "Prompts user to select one option from a list of valid choices."
+  (let* ((choices-str (string-join choices "/"))
+         (msg (format #f "~a [~a] (default ~a): " question choices-str
+                      default-val)))
+    (display msg)
+    (force-output)
+    (let ((input (string-trim-both (read-line))))
+      (cond
+        ((string-null? input)
+         default-val)
+        ((member input choices string-ci=?)
+         (string-downcase input))
+        (else (format #t "Invalid choice. Pick one of: ~a\n" choices-str)
+              (prompt-choice question choices default-val))))))
+
+(define (eval-prompt prompt-spec cli-options)
+  "Evaluates a single prompt specification pair from the valg."
+  (let* ((key (assoc-ref prompt-spec
+                         'key))
+         (prompt-text (assoc-ref prompt-spec
+                                 'prompt))
+         (type (assoc-ref prompt-spec
+                          'type))
+         (default (assoc-ref prompt-spec
+                             'default))
+         (choices (assoc-ref prompt-spec
+                             'choices))
+         ;; Check if value was already passed via CLI flags
+         (cli-val (and cli-options
+                       (option-ref cli-options
+                                   (string->symbol key) #f))))
+    (cons key
+          (or cli-val
+              (case type
+                ((string)
+                 (display (format #f "~a [~a]: " prompt-text default))
+                 (force-output)
+                 (let ((in (string-trim-both (read-line))))
+                   (if (string-null? in) default in)))
+                ((boolean)
+                 (prompt-boolean prompt-text default))
+                ((choice)
+                 (prompt-choice prompt-text choices default))
+                (else default))))))
+
+(define (run-valg-prompts valg cli-options)
+  "Iterates over prompts in the valg and collects key-value context."
+  (let ((prompts (or (assoc-ref valg
+                                'prompts)
+                     '())))
+    (map (lambda (p)
+           (eval-prompt p cli-options)) prompts)))

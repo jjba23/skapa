@@ -68,7 +68,7 @@
 (define (docs)
   "Generate technical API documentation for Skapa."
   (delete-file-recursively "doc")
-  (manifest-shell (list "documenta api ./src/skapa && "
+  (time-machine-manifest-shell (list "documenta api ./src/skapa && "
                         (~ "texi2any -v --html --css-ref=~a -o index_html" api-docs-css-url)
                         "./doc/api/index.texi"))
   (mv "./index_html" "./doc/api-dist"))
