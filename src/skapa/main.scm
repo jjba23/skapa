@@ -31,7 +31,6 @@
   (let* ((resources (option-ref options
                                 'resources "resources"))
 
-         ;; 1. Determine Template Name
          (avail-templates (list-available-templates resources))
          (cli-template (option-ref options
                                    'template #f))
@@ -44,8 +43,10 @@
                                                (car avail-templates)))))
 
          (template-dir (format #f "~a/templates/~a" resources template-name))
+         (contents-dir (format #f "~a/contents" template-dir))
+         (_ (unless (file-exists? contents-dir)
+              (error (format #f "Template '~a' is missing a 'contents/' directory!" template-name))))
          (valg-path (format #f "~a/valg.scm" template-dir))
-
          (valg (load-valg valg-path))
          (user-ctx (run-valg-prompts valg options))
 

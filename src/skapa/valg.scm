@@ -21,6 +21,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (scriba scriba)
   #:use-module (scriba auto)
+  #:use-module (ice-9 getopt-long)
   #:export (load-valg run-valg-prompts prompt-choice prompt-boolean
                       eval-prompt))
 
@@ -47,16 +48,12 @@
     (force-output)
     (let ((input (string-trim-both (read-line))))
       (cond
-        ;; Non-empty input given -> return it
         ((not (string-null? input))
          input)
-        ;; Blank input, but valid default exists -> return default
         (has-default? default-val)
-        ;; Blank input, required field, no default -> reject and ask again
         (required? (display "This field cannot be empty. Please enter a value.
 ")
                    (prompt-string question default-val required?))
-        ;; Blank input, optional field -> return empty string
         (else "")))))
 
 (define (prompt-boolean question default-val)
