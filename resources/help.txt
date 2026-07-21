@@ -1,23 +1,39 @@
+===============================================================================
+  ____  _  __  _   ___  _
+ / ___|| |/ / / \ |  _ \/ \
+ \___ \| ' / / _ \| |_) / _ \
+  ___) | . \/ ___ \  __/ ___ \
+ |____/|_|\_/_/   \_\_| /_/   \_\
 
-+----------------------------------------------------------------------------+
-Skapa:
-    Project scaffolding and templating tool. Quick-start your new projects with many of the ready templates.
+ ~ The Runic Project Scaffolder & Templating Engine ~
+===============================================================================
 
+Quick-start your projects by forging new workspaces from reusable templates.
 
-    See more at: https://codeberg.org/jjba23/skapa
-    Software licensed under the GNU AGPL v3 or newer.
+USAGE:
+  skapa [OPTIONS]
 
-USAGE: skapa [OPTIONS]
 OPTIONS:
+  -n, --name NAME       Name of the project workspace (default: "my-project")
+  -c, --creator NAME    Name of the project author (default: "Anonymous")
+  -m, --template NAME   Template directory to build from (default: "simple-readme")
+  -t, --type TYPE       Project layout: 'o' (open-source) or 'p' (proprietary)
+  -l, --license LIC     License identifier for open-source (e.g., MIT, GPL)
+  -o, --owner OWNER     Copyright owner for proprietary projects
+  -r, --resources DIR   Custom directory path containing templates
+  -h, --help            Display this help message and exit
 
-    -h, --help
-        Display this help message and exit.
+EXAMPLES:
+  # Interactive mode (prompts for missing options):
+  skapa
 
-          ( "  -n, --name NAME      Name of the project\n")
-          ( "  -c, --creator NAME   Name of the creator\n")
-          ( "  -t, --type TYPE      Project type ('o' for open-source, 'p' for proprietary)\n")
-          ( "  -l, --license LIC    License name (for open-source)\n")
-          ( "  -o, --owner OWNER    Copyright owner (for proprietary)\n")
-          ( "  -h, --help           Show this configuration panel\n")
+  # Quick-forge an open-source project with MIT license:
+  skapa -n my-lib -c "Thor" -m simple-readme -t o -l MIT
 
-+----------------------------------------------------------------------------+
+  # Scaffold a proprietary project:
+  skapa --name core-engine --type p --owner "Longhouse Corp"
+
+-------------------------------------------------------------------------------
+Source Code: https://codeberg.org/jjba23/skapa
+License:     GNU AGPL v3 or newer
+===============================================================================

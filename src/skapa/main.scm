@@ -22,6 +22,7 @@
   #:use-module (ice-9 format)
   #:use-module (ice-9 textual-ports)
   #:use-module (ice-9 string-fun)
+  #:use-module (ice-9 ftw)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-13)
   #:use-module (scriba scriba)
@@ -58,6 +59,11 @@ and returns trimmed input (or default-val if empty)."
   "Retrieves an option from the CLI options list or prompts the user if absent."
   (or (option-ref options key #f)
       (prompt-user prompt-msg default-val)))
+
+(define (directory? path)
+  "Returns #t if the given file system path is a directory."
+  (eq? 'directory
+       (stat:type (stat path))))
 
 (define (ensure-directory dir)
   "Safely creates a directory if it does not already exist."
@@ -100,6 +106,25 @@ and returns trimmed input (or default-val if empty)."
             (if (string? val)
                 (template-replace acc key val) acc))) template context))
 
+(define (render-template-directory src-dir dest-dir context)
+  "Recursively scans src-dir, renders both file/directory names and file contents,
+and outputs the generated directory structure to dest-dir."
+  (ensure-directory dest-dir)
+  (let ((entries (or (scandir src-dir
+                              (lambda (f)
+                                (not (member f
+                                             '("." "..")))))
+                     '())))
+    (for-each (lambda (entry)
+                (let* ((rendered-entry (render-template entry context))
+                       (src-path (format #f "~a/~a" src-dir entry))
+                       (dest-path (format #f "~a/~a" dest-dir rendered-entry)))
+                  (if (directory? src-path)
+                      (render-template-directory src-path dest-path context)
+                      (let* ((raw-content (read-file-string src-path))
+                             (rendered (render-template raw-content context)))
+                        (write-file-string dest-path rendered))))) entries)))
+
 ;; =========================================================================
 ;; Crossroads Logic Manager
 ;; =========================================================================
@@ -137,10 +162,13 @@ All rights reserved. Proprietary property of **~a**.
 ;; =========================================================================
 
 (define (run-wizard options)
-  "Orchestrates CLI flag evaluation, prompts, rendering, and directory output."
+  "Orchestrates CLI flag evaluation, prompts, recursive template rendering, and directory output."
   (log-info s "Gathering materials for the forge...\n")
   (let* ((resources (option-ref options
                                 'resources #f))
+         (template-name (get-option options
+                                    'template "> Enter template name: "
+                                    "simple-readme"))
          (name (get-option options
                            'name "> Enter project name: " "my-project"))
          (creator (get-option options
@@ -166,21 +194,19 @@ All rights reserved. Proprietary property of **~a**.
                      ("owner" unquote owner)))
 
          (final-ctx (handle-crossroads type base-ctx))
-         (template-path (format #f "~a/templates/simple-readme/README.org"
-                                resources))
-         (readme-template (read-file-string template-path))
-         (rendered-readme (render-template readme-template final-ctx)))
+         (src-template-dir (format #f "~a/templates/~a" resources
+                                   template-name))
+         (dest-project-dir (format #f "dist/~a" name)))
 
     (log-info s "\nForging files...\n")
     (catch #t
            (lambda ()
              (ensure-directory "dist")
-             (ensure-directory (format #f "dist/~a" name))
-             (write-file-string (format #f "dist/~a/README.org" name)
-                                rendered-readme)
-             (format #t
-              "[Success] Project '~a' has been breathed into existence!
-" name))
+             (render-template-directory src-template-dir dest-project-dir
+                                        final-ctx)
+             (format #t "[Success] Project '~a' created from template '~a'!
+"
+                     name template-name))
            (lambda (key . args)
              (format #t "[Error] Failed to forge the project workspace: ~a: ~a
 "
@@ -201,6 +227,8 @@ All rights reserved. Proprietary property of **~a**.
              (value #t))
     (owner (single-char #\o)
            (value #t))
+    (template (single-char #\m)
+              (value #t))
     (help (single-char #\h)
           (value #f))
     (resources (single-char #\r)

@@ -65,12 +65,13 @@ show_help() {
   cat "${resources_dir}/help.txt"
 }
 
-parsed_options=$(getopt -n "skapa" -o r:h \
-  --long resources:,help -- "$@")
+parsed_options=$(getopt -n "skapa" -o r:m:h \
+  --long resources:,template:,help -- "$@")
 
 eval set -- "${parsed_options}"
 
 resources_arg="${resources_dir}"
+template_arg=""
 
 guile_cmd_args=(
   "-L" "${scheme_sources_dir}"
@@ -83,6 +84,13 @@ while true; do
     resources="${2}"
     if [[ -n "${resources}" ]]; then
       resources_arg="${resources}"
+      shift 2
+    fi
+    ;;
+  -m | --template)
+    template="${2}"
+    if [[ -n "${template}" ]]; then
+      template_arg="${template}"
       shift 2
     fi
     ;;
@@ -102,8 +110,11 @@ while true; do
   esac
 done
 
-# The resources
 guile_cmd_args+=("--resources" "${resources_arg}")
+
+if [[ -n "${template_arg}" ]]; then
+  guile_cmd_args+=("--template" "${template_arg}")
+fi
 
 log_info "-------------------------------------------------"
 log_info "Starting Skapa: guile ${guile_cmd_args[*]}"
