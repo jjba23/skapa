@@ -27,14 +27,14 @@
   (let* ((resources (option-ref options
                                 'resources "resources"))
          (template-name (option-ref options
-                                    'template "default"))
+                                    'template #f))
          (template-dir (format #f "~a/templates/~a" resources template-name))
          (valg-path (format #f "~a/valg.scm" template-dir))
 
          (valg (load-valg valg-path))
          (user-ctx (run-valg-prompts valg options))
 
-         (project-name (or (assoc-ref user-ctx "project-name") "my-project"))
+         (project-name (or (assoc-ref user-ctx "project-name") #f))
          (available-licenses (list-available-licenses resources))
          (lic-id (prompt-choice "> Choose license" available-licenses "gpl3"))
          (lic-ctx (load-license-context lic-id resources))
@@ -67,5 +67,5 @@ Forging project '~a' using template '~a'...
     (resources (single-char #\r)
                (value #t))))
 
-(define (main . args)
+(define* (main #:key (args (command-line)))
   (run-wizard (getopt-long args option-spec)))

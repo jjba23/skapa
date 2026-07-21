@@ -63,14 +63,15 @@
 (define (repl)
   "Development REPL."
   (time-machine-manifest-shell '("guile -L ./src"
-                    "-c '((@ (ares server) run-nrepl-server))'")))
+                                 "-c '((@ (ares server) run-nrepl-server))'")))
 
 (define (docs)
   "Generate technical API documentation for Skapa."
   (delete-file-recursively "doc")
   (time-machine-manifest-shell (list "documenta api ./src/skapa && "
-                        (~ "texi2any -v --html --css-ref=~a -o index_html" api-docs-css-url)
-                        "./doc/api/index.texi"))
+                                     (~
+                                      "texi2any -v --html --css-ref=~a -o index_html"
+                                      api-docs-css-url) "./doc/api/index.texi"))
   (mv "./index_html" "./doc/api-dist"))
 
 (define (deploy)

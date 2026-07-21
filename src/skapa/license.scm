@@ -20,12 +20,9 @@
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 textual-ports)
   #:use-module (srfi srfi-1)
+  #:use-module (ice-9 ftw)
   #:export (list-available-licenses load-license-full-text load-license-header
                                     load-license-context))
-
-;; =========================================================================
-;; Internal Helpers
-;; =========================================================================
 
 (define (licenses-directory resources-dir)
   (format #f "~a/licenses" resources-dir))
@@ -35,10 +32,6 @@
   (if (file-exists? path)
       (call-with-input-file path
         get-string-all) #f))
-
-;; =========================================================================
-;; Public API
-;; =========================================================================
 
 (define (list-available-licenses resources-dir)
   "Scans resources/licenses/ and returns a list of valid license directory names."

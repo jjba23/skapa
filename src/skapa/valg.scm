@@ -19,7 +19,8 @@
   #:declarative? #t
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1)
-  #:export (load-valg run-valg-prompts))
+  #:export (load-valg run-valg-prompts prompt-choice prompt-boolean
+                      eval-prompt run-valg-prompts))
 
 (define (load-valg valg-path)
   "Loads a template valg file if it exists, returning an alist."

@@ -19,6 +19,7 @@
   #:declarative? #t
   #:use-module (ice-9 regex)
   #:use-module (ice-9 textual-ports)
+  #:use-module (ice-9 ftw)
   #:use-module (srfi srfi-1)
   #:export (render-template-string render-template-directory))
 
@@ -29,6 +30,24 @@
                 (module-define! m
                                 (string->symbol (car pair))
                                 (cdr pair))) context-alist) m))
+
+(define (mkdir-p path)
+  "Recursively creates PATH and all required parent directories."
+  (unless (or (string-null? path)
+              (file-exists? path))
+    (let ((parent (dirname path)))
+      ;; Recurse into parent unless we've reached root ("/") or current dir (".")
+      (when (and (not (string=? parent path))
+                 (not (string=? parent ".")))
+        (mkdir-p parent))
+      ;; Safely create the current path level
+      (catch 'system-error
+        (lambda ()
+          (mkdir path))
+        (lambda (key . args)
+          (unless (and (file-exists? path)
+                       (eq? 'directory (stat:type (stat path))))
+            (apply throw key args)))))))
 
 (define (eval-rune-token token-str context-alist)
   "Parses and evaluates an embedded Scheme expression within the template context."
