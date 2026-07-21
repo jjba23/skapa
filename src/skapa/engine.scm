@@ -21,7 +21,7 @@
   #:use-module (ice-9 textual-ports)
   #:use-module (ice-9 ftw)
   #:use-module (srfi srfi-1)
-  #:export (render-template-string render-template-directory))
+  #:export (render-template-string render-template-directory list-available-templates))
 
 (define (alist->eval-environment context-alist)
   "Creates a top-level evaluation sandbox populated with variables from context."
@@ -110,3 +110,18 @@
                             (display rendered port)))))))
               (or entries
                   '()))))
+
+(define (list-available-templates resources-dir)
+  "Scans resources/templates and returns a list of template directory names."
+  (let* ((templates-dir (format #f "~a/templates" resources-dir))
+         (entries (and (file-exists? templates-dir)
+                       (scandir templates-dir
+                                (lambda (f)
+                                  (and (not (member f
+                                                    '("." "..")))
+                                       (eq? 'directory
+                                            (stat:type (stat (format #f
+                                                              "~a/~a"
+                                                              templates-dir f))))))))))
+    (or entries
+        '())))
