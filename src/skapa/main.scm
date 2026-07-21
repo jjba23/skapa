@@ -22,178 +22,173 @@
   #:use-module (ice-9 format)
   #:use-module (ice-9 textual-ports)
   #:use-module (ice-9 string-fun)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-13)
   #:use-module (scriba scriba)
   #:use-module (scriba auto)
   #:export (main))
 
+;; =========================================================================
+;; File System & I/O Helpers
+;; =========================================================================
+
 (define s
   (scriba-auto-logger))
+
+(define (prompt-user message default-val)
+  "Displays an interactive prompt string to the user, flushes output,
+and returns trimmed input (or default-val if empty)."
+  (log-info s message)
+  (force-output)
+  (let ((input (string-trim-both (read-line))))
+    (if (string-null? input) default-val input)))
+
+(define (prompt-choice message valid-choices default-val error-msg)
+  "Repeatedly prompts the user until input matches one of valid-choices."
+  (let loop
+    ()
+    (let ((choice (prompt-user message default-val)))
+      (if (member choice valid-choices string-ci=?)
+          (string-downcase choice)
+          (begin
+            (log-warning s error-msg)
+            (loop))))))
+
+(define (get-option options key prompt-msg default-val)
+  "Retrieves an option from the CLI options list or prompts the user if absent."
+  (or (option-ref options key #f)
+      (prompt-user prompt-msg default-val)))
+
+(define (ensure-directory dir)
+  "Safely creates a directory if it does not already exist."
+  (catch #t
+         (lambda ()
+           (mkdir dir))
+         (lambda _
+           #f)))
+
+(define (read-file-string path)
+  "Reads an entire file into a string."
+  (call-with-input-file path
+    get-string-all))
+
+(define (write-file-string path content)
+  "Writes a string payload to a target file path."
+  (call-with-output-file path
+    (lambda (port)
+      (display content port))))
 
 ;; =========================================================================
 ;; The Runic Templating Engine
 ;; =========================================================================
 
-;; Define rune delimiters centrally
 (define rune-prefix
   "<:")
 (define rune-suffix
   ":>")
 
 (define (template-replace template key value)
-  "Scans the template string and replaces all instances of 'rune-prefix + key + rune-suffix'
-with the given value string."
+  "Replaces instances of rune-prefix + key + rune-suffix with value."
   (let ((rune-tag (string-append rune-prefix key rune-suffix)))
     (string-replace-substring template rune-tag value)))
 
 (define (render-template template context)
-  "Recursively processes the template by mapping over an association list (alist)
-of context keys and values, yielding the final injected string document."
-  (let loop
-    ((current-template template)
-     (ctx context))
-    (if (null? ctx) current-template
-        (let* ((pair (car ctx))
-               (key (car pair))
-               (val (cdr pair)))
-          (if (string? val)
-              (loop (template-replace current-template key val)
-                    (cdr ctx))
-              (loop current-template
-                    (cdr ctx)))))))
-
-;; =========================================================================
-;; User Input / I/O Interface
-;; =========================================================================
-
-(define (prompt-user message default-val)
-  "Displays an interactive prompt string to the user, flushes the output port,
-and returns trimmed input. Cascades to default-val if the input line is empty."
-  (log-info s message)
-  (force-output)
-  (let ((input (string-trim-both (read-line))))
-    (if (string-null? input) default-val input)))
+  "Applies an association list of context pairs to a template string."
+  (fold (lambda (pair acc)
+          (let ((key (car pair))
+                (val (cdr pair)))
+            (if (string? val)
+                (template-replace acc key val) acc))) template context))
 
 ;; =========================================================================
 ;; Crossroads Logic Manager
 ;; =========================================================================
 
+(define (apply-crossroads-branch context key prompt default template-fmt)
+  "Helper to prompt for missing metadata and append crossroads content to context."
+  (let* ((existing-val (assoc-ref context key))
+         (val (or existing-val
+                  (prompt-user prompt default)))
+         (content (format #f template-fmt val)))
+    (alist-cons "crossroads-content" content
+                (alist-cons key val context))))
+
 (define (handle-crossroads type context-alist)
-  "Evaluates the branching choice 'type' (Open Source vs. Proprietary).
-Extends the incoming context alist by prompting for path-specific items
-and binding the dynamically generated 'crossroads-content' template token."
+  "Evaluates branching choices and extends context with generated content."
   (cond
     ((string-ci=? type "o")
-     (let* ((license-flag (assoc-ref context-alist "license"))
-            (license (or license-flag
-                         (prompt-user
-                          "> Choose your shield (License) [MIT/GPL/Apache]: "
-                          "MIT")))
-            (content (string-append
-                      "## License
-This project is open-source and distributed under the **"
-                      license "** license.\n")))
-       (cons (cons "crossroads-content" content)
-             (cons (cons "license" license) context-alist))))
+     (apply-crossroads-branch context-alist "license"
+      "> Choose your shield (License) [MIT/GPL/Apache]: " "MIT"
+      "## License
+This project is open-source and distributed under the **~a** license.
+"))
+
     ((string-ci=? type "p")
-     (let* ((owner-flag (assoc-ref context-alist "owner"))
-            (owner (or owner-flag
-                       (prompt-user
-                        "> Enter the Copyright Owner (Longhouse Chief): "
-                        "The Clan")))
-            (content (string-append
-                      "## Copyright
-All rights reserved. Proprietary property of **" owner
-                      "**.\n")))
-       (cons (cons "crossroads-content" content)
-             (cons (cons "owner" owner) context-alist))))
-    (else (cons (cons "crossroads-content" "") context-alist))))
+     (apply-crossroads-branch context-alist "owner"
+      "> Enter the Copyright Owner (Longhouse Chief): " "The Clan"
+      "## Copyright
+All rights reserved. Proprietary property of **~a**.
+"))
+
+    (else (alist-cons "crossroads-content" "" context-alist))))
 
 ;; =========================================================================
 ;; Main Entry Point & Orchestration
 ;; =========================================================================
 
 (define (run-wizard options)
-  "Orchestrates the scaffolding lifecycle: extracts active CLI arguments,
-prompts for unconfigured fields, evaluates the crossroads logic path,
-and safely attempts to commit the structure to the underlying file system."
+  "Orchestrates CLI flag evaluation, prompts, rendering, and directory output."
   (log-info s "Gathering materials for the forge...\n")
-  (let* ((opt-name (option-ref options
-                               'name #f))
-         (resources (option-ref options
+  (let* ((resources (option-ref options
                                 'resources #f))
-         (name (or opt-name
-                   (prompt-user "> Enter project name: " "my-project")))
+         (name (get-option options
+                           'name "> Enter project name: " "my-project"))
+         (creator (get-option options
+                              'creator "> Enter your name (The Creator): "
+                              "Anonymous"))
+         (license (option-ref options
+                              'license #f))
+         (owner (option-ref options
+                            'owner #f))
 
-         (opt-creator (option-ref options
-                                  'creator #f))
-         (creator (or opt-creator
-                      (prompt-user "> Enter your name (The Creator): "
-                                   "Anonymous")))
-
-         (base-ctx (list (cons "project-name" name)
-                         (cons "creator" creator)
-                         (cons "license"
-                               (option-ref options
-                                           'license #f))
-                         (cons "owner"
-                               (option-ref options
-                                           'owner #f))))
-
-         (opt-type (option-ref options
-                               'type #f))
-         (type (or opt-type
-                   (let loop
-                     ()
-                     (let ((t (prompt-user
-                               "
+         (type (or (option-ref options
+                               'type #f)
+                   (prompt-choice
+                    "
 --- THE CROSSROADS ---
 > Is this project Open Source (o) or Proprietary (p)? "
-                               "o")))
-                       (if (member t
-                                   '("o" "p" "O" "P")) t
-                           (begin
-                             (log-warning s
-                              "Invalid layout. Please select 'o' or 'p'.
-")
-                             (loop)))))))
+                    '("o" "p") "o" "Invalid layout. Please select 'o' or 'p'.
+")))
+
+         (base-ctx `(("project-name" unquote name)
+                     ("creator" unquote creator)
+                     ("license" unquote license)
+                     ("owner" unquote owner)))
 
          (final-ctx (handle-crossroads type base-ctx))
-         (project-template "simple-readme")
-         (readme-template (get-string-all (open-input-file (format #f
-                                                            "~a/templates/~a/README.org"
-                                                            resources
-                                                            project-template))))
+         (template-path (format #f "~a/templates/simple-readme/README.org"
+                                resources))
+         (readme-template (read-file-string template-path))
          (rendered-readme (render-template readme-template final-ctx)))
 
     (log-info s "\nForging files...\n")
     (catch #t
            (lambda ()
-             (mkdir "dist"))
-           (lambda (key . args)
-             (values)))
-    (catch #t
-           (lambda ()
-             (mkdir (format #f "dist/~a" name)))
-
-           (lambda (key . args)
-             (values)))
-    (catch #t
-           (lambda ()
-             (let ((port (open-output-file (format #f "dist/~a/README.org"
-                                                   name))))
-               (display rendered-readme port)
-               (close-output-port port))
+             (ensure-directory "dist")
+             (ensure-directory (format #f "dist/~a" name))
+             (write-file-string (format #f "dist/~a/README.org" name)
+                                rendered-readme)
              (format #t
               "[Success] Project '~a' has been breathed into existence!
 " name))
            (lambda (key . args)
-             (format #t "[Error] Failed to forge the project workspace: ~a:
-~a
+             (format #t "[Error] Failed to forge the project workspace: ~a: ~a
 "
                      key args)))))
 
-;; ==========================================
+;; =========================================================================
+;; Command Line Options Interface
+;; =========================================================================
 
 (define option-spec
   '((name (single-char #\n)
@@ -212,10 +207,9 @@ and safely attempts to commit the structure to the underlying file system."
                (value #t))))
 
 (define* (main #:key (args (command-line)))
-  (let* ((_ (begin
-              (newline)
-              (write args)
-              (newline)))
-         (options (getopt-long args option-spec)))
+  (newline)
+  (write args)
+  (newline)
+  (let ((options (getopt-long args option-spec)))
     (log-info s "Starting Skapa, The Project Scaffolder")
     (run-wizard options)))
