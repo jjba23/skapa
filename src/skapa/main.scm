@@ -53,11 +53,11 @@
          (cli-name (option-ref options
                                'name #f))
          (project-name (or cli-name
-                           (assoc-ref user-ctx "project-name")))
+                           (assq-ref user-ctx "project-name")))
          (cli-creator (option-ref options
                                   'creator #f))
          (creator-name (or cli-creator
-                           (assoc-ref user-ctx "creator")))
+                           (assq-ref user-ctx "creator")))
 
          (available-licenses (list-available-licenses resources))
          (cli-license (option-ref options

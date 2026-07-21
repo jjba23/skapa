@@ -92,21 +92,21 @@
 
 (define (eval-prompt prompt-spec cli-options)
   "Evaluates a single prompt specification pair from the valg."
-  (let* ((k (assoc-ref prompt-spec
+  (let* ((k (assq-ref prompt-spec
                        'key))
          (key (if (symbol? k) k
                   (string->symbol k)))
-         (prompt-text (assoc-ref prompt-spec
+         (prompt-text (assq-ref prompt-spec
                                  'prompt))
-         (type (assoc-ref prompt-spec
+         (type (assq-ref prompt-spec
                           'type))
-         (default (assoc-ref prompt-spec
+         (default (assq-ref prompt-spec
                              'default))
-         (required? (or (assoc-ref prompt-spec
+         (required? (or (assq-ref prompt-spec
                                    'required?)
-                        (assoc-ref prompt-spec
+                        (assq-ref prompt-spec
                                    'required) #f))
-         (choices (assoc-ref prompt-spec
+         (choices (assq-ref prompt-spec
                              'choices))
          (cli-val (and cli-options
                        (option-ref cli-options key #f))))
@@ -123,7 +123,7 @@
 
 (define (run-valg-prompts valg cli-options)
   "Iterates over prompts in the valg and collects key-value context."
-  (let ((prompts (or (assoc-ref valg
+  (let ((prompts (or (assq-ref valg
                                 'prompts)
                      '())))
     (map (lambda (p)
