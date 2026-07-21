@@ -20,7 +20,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1)
   #:export (load-valg run-valg-prompts prompt-choice prompt-boolean
-                      eval-prompt run-valg-prompts))
+                      eval-prompt))
 
 (define (load-valg valg-path)
   "Loads a template valg file if it exists, returning an alist."
@@ -76,7 +76,6 @@
                              'default))
          (choices (assoc-ref prompt-spec
                              'choices))
-         ;; Check if value was already passed via CLI flags
          (cli-val (and cli-options
                        (option-ref cli-options
                                    (string->symbol key) #f))))

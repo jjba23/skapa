@@ -15,6 +15,8 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with skapa. If not, see <https://www.gnu.org/licenses/>.
 
+;;; Skapa
+
 (define-module (skapa main)
   #:declarative? #t
   #:use-module (ice-9 getopt-long)
@@ -26,63 +28,59 @@
   #:export (main))
 
 (define (run-wizard options)
-  (if (option-ref options
-                  'help #f)
-      (display-help)
-      (let* ((resources (option-ref options
-                                    'resources "resources"))
+  (let* ((resources (option-ref options
+                                'resources "resources"))
 
-             ;; 1. Determine Template Name (CLI flag -> Interactive Prompt)
-             (avail-templates (list-available-templates resources))
-             (cli-template (option-ref options
-                                       'template #f))
-             (template-name (or cli-template
-                                (if (null? avail-templates)
-                                    (error
-                                     "No templates found in resources/templates directory!")
-                                    (prompt-choice "> Choose template"
-                                                   avail-templates
-                                                   (car avail-templates)))))
+         ;; 1. Determine Template Name
+         (avail-templates (list-available-templates resources))
+         (cli-template (option-ref options
+                                   'template #f))
+         (template-name (or cli-template
+                            (if (null? avail-templates)
+                                (error
+                                 "No templates found in resources/templates directory!")
+                                (prompt-choice "> Choose template"
+                                               avail-templates
+                                               (car avail-templates)))))
 
-             (template-dir (format #f "~a/templates/~a" resources
-                                   template-name))
-             (valg-path (format #f "~a/valg.scm" template-dir))
+         (template-dir (format #f "~a/templates/~a" resources template-name))
+         (valg-path (format #f "~a/valg.scm" template-dir))
 
-             ;; 2. Load Valg & execute prompts (passing CLI options for flag overrides)
-             (valg (load-valg valg-path))
-             (user-ctx (run-valg-prompts valg options))
+         (valg (load-valg valg-path))
+         (user-ctx (run-valg-prompts valg options))
 
-             ;; 3. Determine Project Name (CLI flag -n -> Valg prompt -> Default)
-             (cli-name (option-ref options
-                                   'name #f))
-             (project-name (or cli-name
-                               (assoc-ref user-ctx "project-name")
-                               "my-project"))
+         (cli-name (option-ref options
+                               'name #f))
+         (project-name (or cli-name
+                           (assoc-ref user-ctx "project-name")))
+         (cli-creator (option-ref options
+                                  'creator #f))
+         (creator-name (or cli-creator
+                           (assoc-ref user-ctx "creator")))
 
-             ;; 4. Determine License (CLI flag -l -> Interactive Prompt -> Default)
-             (available-licenses (list-available-licenses resources))
-             (cli-license (option-ref options
-                                      'license #f))
-             (lic-id (or (and cli-license
-                              (member cli-license available-licenses
-                                      string-ci=?) cli-license)
-                         (prompt-choice "> Choose license" available-licenses
-                                        "gpl3")))
+         (available-licenses (list-available-licenses resources))
+         (cli-license (option-ref options
+                                  'license #f))
+         (lic-id (or (and cli-license
+                          (member cli-license available-licenses string-ci=?)
+                          cli-license)
+                     (prompt-choice "> Choose license" available-licenses
+                                    "gpl3")))
 
-             (lic-ctx (load-license-context lic-id resources))
+         (lic-ctx (load-license-context lic-id resources))
 
-             ;; 5. Build Final Engine Context
-             (final-ctx (append `(("project-name" unquote project-name)
-                                  ("year" . "2026")) user-ctx lic-ctx))
+         (final-ctx (append `(("project-name" unquote project-name)
+                              ("creator" unquote creator-name)
+                              ("year" . "2026")) user-ctx lic-ctx))
 
-             (dest-dir (format #f "dist/~a" project-name)))
+         (dest-dir (format #f "dist/~a" project-name)))
 
-        (format #t "
+    (format #t "
 Forging project '~a' using template '~a'...
 " project-name
-                template-name)
-        (render-template-directory template-dir dest-dir final-ctx)
-        (format #t "[Success] Workspace created at: ~a\n" dest-dir))))
+            template-name)
+    (render-template-directory template-dir dest-dir final-ctx)
+    (format #t "[Success] Workspace created at: ~a\n" dest-dir)))
 
 (define option-spec
   '((name (single-char #\n)
@@ -97,8 +95,6 @@ Forging project '~a' using template '~a'...
            (value #t))
     (template (single-char #\m)
               (value #t))
-    (help (single-char #\h)
-          (value #f))
     (resources (single-char #\r)
                (value #t))))
 

@@ -17,31 +17,21 @@
 
 (define-module (skapa engine)
   #:declarative? #t
-  #:use-module (ice-9 regex)
   #:use-module (ice-9 textual-ports)
   #:use-module (ice-9 ftw)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-13)
   #:export (render-template-string render-template-directory
                                    list-available-templates))
-
-(define (alist->eval-environment context-alist)
-  "Creates a top-level evaluation sandbox populated with variables from context."
-  (let ((m (make-sandbox-module)))
-    (for-each (lambda (pair)
-                (module-define! m
-                                (string->symbol (car pair))
-                                (cdr pair))) context-alist) m))
 
 (define (mkdir-p path)
   "Recursively creates PATH and all required parent directories."
   (unless (or (string-null? path)
               (file-exists? path))
     (let ((parent (dirname path)))
-      ;; Recurse into parent unless we've reached root ("/") or current dir (".")
       (when (and (not (string=? parent path))
                  (not (string=? parent ".")))
         (mkdir-p parent))
-      ;; Safely create the current path level
       (catch 'system-error
              (lambda ()
                (mkdir path))
@@ -66,21 +56,17 @@
   "Parses and evaluates an embedded Scheme expression string."
   (catch #t
          (lambda ()
-           (let* ((expr (read-from-string token-str))
+           (let* ((expr (with-input-from-string token-str read))
                   (res (eval expr context-module)))
              (cond
                ((boolean? res)
                 (if res "true" "false"))
-               ((null? res)
-                "")
-               ((not res)
+               ((or (null? res)
+                    (not res))
                 "")
                (else (format #f "~a" res)))))
          (lambda (key . args)
            (format #f "[[Template Error (~a): ~a]]" key token-str))))
-
-(define rune-regex
-  (make-regexp "<:[[:space:]]*(.*?)[[:space:]]*:>"))
 
 (define (render-template-string template-str context-alist)
   "Replaces all <: scheme-expression :> tags with evaluated results."
@@ -88,17 +74,22 @@
     (let loop
       ((offset 0)
        (acc ""))
-      (let ((m (regexp-exec rune-regex template-str offset)))
-        (if (not m)
+      (let ((start (string-contains template-str "<:" offset)))
+        (if (not start)
             (string-append acc
                            (substring template-str offset))
-            (let* ((start (match:start m 0))
-                   (end (match:end m 0))
-                   (expr-str (match:substring m 1))
-                   (prefix (substring template-str offset start))
-                   (evaluated (eval-rune-token expr-str eval-env)))
-              (loop end
-                    (string-append acc prefix evaluated))))))))
+            (let ((end (string-contains template-str ":>"
+                                        (+ start 2))))
+              (if (not end)
+                  (string-append acc
+                                 (substring template-str offset))
+                  (let* ((prefix (substring template-str offset start))
+                         (expr-str (string-trim-both (substring template-str
+                                                                (+ start 2)
+                                                                end)))
+                         (evaluated (eval-rune-token expr-str eval-env)))
+                    (loop (+ end 2)
+                          (string-append acc prefix evaluated))))))))))
 
 (define (render-template-directory src-dir dest-dir context-alist)
   "Recursively renders and outputs directory structure and files."
@@ -108,7 +99,6 @@
                             (not (member f
                                          '("." "..")))))))
     (for-each (lambda (entry)
-                ;; Ignore template manifest/valg files when rendering output workspace
                 (unless (member entry
                                 '("valg.scm" "manifest.scm"))
                   (let* ((rendered-entry (render-template-string entry
