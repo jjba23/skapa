@@ -62,7 +62,7 @@
 
 (define (repl)
   "Development REPL."
-  (manifest-shell '("guile -L ./src"
+  (time-machine-manifest-shell '("guile -L ./src"
                     "-c '((@ (ares server) run-nrepl-server))'")))
 
 (define (docs)
@@ -108,5 +108,5 @@
 
 (define (run)
   "Run skapa."
-  (time-machine-program-shell (list "skapa --help")
+  (time-machine-program-shell (list "skapa")
                               #:verbose? #t))

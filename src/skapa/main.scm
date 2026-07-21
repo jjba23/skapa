@@ -20,6 +20,7 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 format)
+  #:use-module (ice-9 textual-ports)
   #:use-module (ice-9 string-fun)
   #:use-module (srfi srfi-13)
   #:use-module (scriba scriba)
@@ -29,22 +30,18 @@
 (define s
   (scriba-auto-logger))
 
-(define readme-template
-  (string-append "# ---+++project-name+++---\n\n"
-                 "> Formed by the hand of ---+++creator+++---.
-
-" "## Overview\n"
-                 "Welcome to ---+++project-name+++---.\n\n"
-                 "---+++crossroads-content+++---\n"))
-
 ;; =========================================================================
 ;; The Runic Templating Engine
 ;; =========================================================================
 
+;; Define rune delimiters centrally
+(define rune-prefix "<:")
+(define rune-suffix ":>")
+
 (define (template-replace template key value)
-  "Scans the template string and replaces all instances of the runic sequence
-'---+++key+++---' with the given value string."
-  (let ((rune-tag (string-append "---+++" key "+++---")))
+  "Scans the template string and replaces all instances of 'rune-prefix + key + rune-suffix'
+with the given value string."
+  (let ((rune-tag (string-append rune-prefix key rune-suffix)))
     (string-replace-substring template rune-tag value)))
 
 (define (render-template template context)
@@ -53,7 +50,8 @@ of context keys and values, yielding the final injected string document."
   (let loop
     ((current-template template)
      (ctx context))
-    (if (null? ctx) current-template
+    (if (null? ctx)
+        current-template
         (let* ((pair (car ctx))
                (key (car pair))
                (val (cdr pair)))
@@ -121,8 +119,11 @@ and safely attempts to commit the structure to the underlying file system."
   (log-info s "Gathering materials for the forge...\n")
   (let* ((opt-name (option-ref options
                                'name #f))
+         (resources (option-ref options
+                                'resources #f))
          (name (or opt-name
                    (prompt-user "> Enter project name: " "my-project")))
+
 
          (opt-creator (option-ref options
                                   'creator #f))
@@ -158,6 +159,8 @@ and safely attempts to commit the structure to the underlying file system."
                              (loop)))))))
 
          (final-ctx (handle-crossroads type base-ctx))
+         (project-template "simple-readme")
+         (readme-template (get-string-all (open-input-file (format #f "~a/templates/~a/README.org" resources project-template))))
          (rendered-readme (render-template readme-template final-ctx)))
 
     (log-info s "\nForging files...\n")
@@ -191,16 +194,13 @@ and safely attempts to commit the structure to the underlying file system."
     (help (single-char #\h)
           (value #f))
     (resources (single-char #\r)
-               (value #f))))
+               (value #t))))
 
 (define* (main #:key (args (command-line)))
   (let* ((_ (begin
               (newline)
               (write args)
               (newline)))
-
-         (options (getopt-long args option-spec))
-         (resources (option-ref options
-                                'resources #f)))
+         (options (getopt-long args option-spec)))
     (log-info s "Starting Skapa, The Project Scaffolder")
     (run-wizard options)))
