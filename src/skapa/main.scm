@@ -147,15 +147,12 @@ Errors out if the selected template does not exist."
     (when (null? available-templates)
       (error "No templates found in resources directory" resources))
 
-    (let* ((default-template (if (member "simple-readme" available-templates)
-                                 "simple-readme"
-                                 (car available-templates)))
-           (prompt-msg (format #f "> Choose a template [~a]: "
+    (let* ((prompt-msg (format #f "> Choose a template [~a]: "
                                (string-join available-templates "/")))
            (chosen (or (option-ref options
                                    'template #f)
-                       (prompt-user prompt-msg default-template))))
-      
+                       (prompt-user prompt-msg #f))))
+
       (if (member chosen available-templates) chosen
           (error (format #f
                   "Template '~a' does not exist. Available templates: ~a"
@@ -218,7 +215,6 @@ All rights reserved. Proprietary property of **~a**.
                                'type #f)
                    (prompt-choice
                     "
---- THE CROSSROADS ---
 > Is this project Open Source (o) or Proprietary (p)? "
                     '("o" "p") "o" "Invalid layout. Please select 'o' or 'p'.
 ")))
@@ -232,7 +228,7 @@ All rights reserved. Proprietary property of **~a**.
          (src-template-dir (format #f "~a/templates/~a" resources
                                    template-name))
          (dest-project-dir (format #f "dist/~a" name)))
-    
+
     (log-info s "\nForging files...\n")
     (catch #t
            (lambda ()
