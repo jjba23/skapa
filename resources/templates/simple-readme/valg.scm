@@ -4,6 +4,11 @@
                (required? . #t)
                (type . string))
 
+              ((key . creator)
+               (prompt . "Project author")
+               (required? . #t)
+               (type . string))
+
               ((key . "framework")
                (prompt . "Backend Framework")
                (type . choice)

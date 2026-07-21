@@ -30,7 +30,6 @@
 
 (define (load-valg valg-path)
   "Loads a template valg file if it exists, returning an alist."
-  (log-info s "Reading valg file if exists: ~a" valg-path)
   (if (file-exists? valg-path)
       (with-input-from-file valg-path
         read)
@@ -93,8 +92,10 @@
 
 (define (eval-prompt prompt-spec cli-options)
   "Evaluates a single prompt specification pair from the valg."
-  (let* ((key (assoc-ref prompt-spec
-                         'key))
+  (let* ((k (assoc-ref prompt-spec
+                       'key))
+         (key (if (symbol? k) k
+                  (string->symbol k)))
          (prompt-text (assoc-ref prompt-spec
                                  'prompt))
          (type (assoc-ref prompt-spec
@@ -108,8 +109,7 @@
          (choices (assoc-ref prompt-spec
                              'choices))
          (cli-val (and cli-options
-                       (option-ref cli-options
-                                   (string->symbol key) #f))))
+                       (option-ref cli-options key #f))))
     (cons key
           (or cli-val
               (case type

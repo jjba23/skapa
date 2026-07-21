@@ -80,7 +80,7 @@
 Forging project '~a' using template '~a'...
 " project-name
             template-name)
-    (render-template-directory template-dir dest-dir final-ctx)
+    (render-template-directory contents-dir dest-dir final-ctx)
     (format #t "[Success] Workspace created at: ~a\n" dest-dir)))
 
 (define option-spec
