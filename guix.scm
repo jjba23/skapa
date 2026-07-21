@@ -55,8 +55,9 @@
                     (share (string-append #$output "/share")))
                 (install-file "resources/help.txt"
                               (string-append share "/resources"))
-                (install-file "resources/templates"
-                              (string-append share "/resources"))
+                (mkdir-p (string-append share "/resources/templates"))
+                (copy-recursively "resources/templates"
+                              (string-append share "/resources/templates"))
                 (install-file "scripts/skapa" bin)
                 (chmod (string-append bin "/skapa") #o755))))
           (add-after 'install-program-files 'wrap-program

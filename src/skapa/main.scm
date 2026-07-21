@@ -35,8 +35,10 @@
 ;; =========================================================================
 
 ;; Define rune delimiters centrally
-(define rune-prefix "<:")
-(define rune-suffix ":>")
+(define rune-prefix
+  "<:")
+(define rune-suffix
+  ":>")
 
 (define (template-replace template key value)
   "Scans the template string and replaces all instances of 'rune-prefix + key + rune-suffix'
@@ -50,8 +52,7 @@ of context keys and values, yielding the final injected string document."
   (let loop
     ((current-template template)
      (ctx context))
-    (if (null? ctx)
-        current-template
+    (if (null? ctx) current-template
         (let* ((pair (car ctx))
                (key (car pair))
                (val (cdr pair)))
@@ -124,7 +125,6 @@ and safely attempts to commit the structure to the underlying file system."
          (name (or opt-name
                    (prompt-user "> Enter project name: " "my-project")))
 
-
          (opt-creator (option-ref options
                                   'creator #f))
          (creator (or opt-creator
@@ -160,23 +160,38 @@ and safely attempts to commit the structure to the underlying file system."
 
          (final-ctx (handle-crossroads type base-ctx))
          (project-template "simple-readme")
-         (readme-template (get-string-all (open-input-file (format #f "~a/templates/~a/README.org" resources project-template))))
+         (readme-template (get-string-all (open-input-file (format #f
+                                                            "~a/templates/~a/README.org"
+                                                            resources
+                                                            project-template))))
          (rendered-readme (render-template readme-template final-ctx)))
 
     (log-info s "\nForging files...\n")
     (catch #t
            (lambda ()
-             (mkdir name)
-             (let ((port (open-output-file (string-append name "/README"))))
+             (mkdir "dist"))
+           (lambda (key . args)
+             (values)))
+    (catch #t
+           (lambda ()
+             (mkdir (format #f "dist/~a" name)))
+
+           (lambda (key . args)
+             (values)))
+    (catch #t
+           (lambda ()
+             (let ((port (open-output-file (format #f "dist/~a/README.org"
+                                                   name))))
                (display rendered-readme port)
                (close-output-port port))
              (format #t
               "[Success] Project '~a' has been breathed into existence!
 " name))
            (lambda (key . args)
-             (format #t "[Error] Failed to forge the project workspace: ~a
-" key)))))
-
+             (format #t "[Error] Failed to forge the project workspace: ~a:
+~a
+"
+                     key args)))))
 
 ;; ==========================================
 
