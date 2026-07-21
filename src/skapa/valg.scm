@@ -19,15 +19,45 @@
   #:declarative? #t
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1)
+  #:use-module (scriba scriba)
+  #:use-module (scriba auto)
   #:export (load-valg run-valg-prompts prompt-choice prompt-boolean
                       eval-prompt))
 
+(define s
+  (scriba-auto-logger))
+
 (define (load-valg valg-path)
   "Loads a template valg file if it exists, returning an alist."
+  (log-info s "Reading valg file if exists: ~a" valg-path)
   (if (file-exists? valg-path)
       (with-input-from-file valg-path
         read)
       '()))
+
+(define (prompt-string question default-val required?)
+  "Prompts user for a string. If required? is #t and no input or default exists, re-prompts."
+  (let* ((has-default? (and default-val
+                            (not (string-null? default-val))))
+         (default-str (if has-default?
+                          (format #f " [~a]" default-val) ""))
+         (req-str (if required? " (required)" ""))
+         (msg (format #f "~a~a~a: " question req-str default-str)))
+    (display msg)
+    (force-output)
+    (let ((input (string-trim-both (read-line))))
+      (cond
+        ;; Non-empty input given -> return it
+        ((not (string-null? input))
+         input)
+        ;; Blank input, but valid default exists -> return default
+        (has-default? default-val)
+        ;; Blank input, required field, no default -> reject and ask again
+        (required? (display "This field cannot be empty. Please enter a value.
+")
+                   (prompt-string question default-val required?))
+        ;; Blank input, optional field -> return empty string
+        (else "")))))
 
 (define (prompt-boolean question default-val)
   "Prompts user for a yes/no answer, defaulting to default-val (#t or #f)."
@@ -74,6 +104,10 @@
                           'type))
          (default (assoc-ref prompt-spec
                              'default))
+         (required? (or (assoc-ref prompt-spec
+                                   'required?)
+                        (assoc-ref prompt-spec
+                                   'required) #f))
          (choices (assoc-ref prompt-spec
                              'choices))
          (cli-val (and cli-options
@@ -83,10 +117,7 @@
           (or cli-val
               (case type
                 ((string)
-                 (display (format #f "~a [~a]: " prompt-text default))
-                 (force-output)
-                 (let ((in (string-trim-both (read-line))))
-                   (if (string-null? in) default in)))
+                 (prompt-string prompt-text default required?))
                 ((boolean)
                  (prompt-boolean prompt-text default))
                 ((choice)
