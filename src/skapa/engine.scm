@@ -21,7 +21,8 @@
   #:use-module (ice-9 textual-ports)
   #:use-module (ice-9 ftw)
   #:use-module (srfi srfi-1)
-  #:export (render-template-string render-template-directory list-available-templates))
+  #:export (render-template-string render-template-directory
+                                   list-available-templates))
 
 (define (alist->eval-environment context-alist)
   "Creates a top-level evaluation sandbox populated with variables from context."
@@ -42,24 +43,37 @@
         (mkdir-p parent))
       ;; Safely create the current path level
       (catch 'system-error
-        (lambda ()
-          (mkdir path))
-        (lambda (key . args)
-          (unless (and (file-exists? path)
-                       (eq? 'directory (stat:type (stat path))))
-            (apply throw key args)))))))
+             (lambda ()
+               (mkdir path))
+             (lambda (key . args)
+               (unless (and (file-exists? path)
+                            (eq? 'directory
+                                 (stat:type (stat path))))
+                 (apply throw key args)))))))
 
-(define (eval-rune-token token-str context-alist)
-  "Parses and evaluates an embedded Scheme expression within the template context."
+(define (make-context-module context-alist)
+  "Creates a fresh evaluation environment populated with variables from context-alist."
+  (let ((m (make-fresh-user-module)))
+    (for-each (lambda (pair)
+                (let ((key (car pair))
+                      (val (cdr pair)))
+                  (when (and key val)
+                    (let ((sym (if (symbol? key) key
+                                   (string->symbol key))))
+                      (module-define! m sym val))))) context-alist) m))
+
+(define (eval-rune-token token-str context-module)
+  "Parses and evaluates an embedded Scheme expression string."
   (catch #t
          (lambda ()
            (let* ((expr (read-from-string token-str))
-                  (env (alist->eval-environment context-alist))
-                  (res (eval expr env)))
+                  (res (eval expr context-module)))
              (cond
                ((boolean? res)
                 (if res "true" "false"))
                ((null? res)
+                "")
+               ((not res)
                 "")
                (else (format #f "~a" res)))))
          (lambda (key . args)
@@ -69,45 +83,49 @@
   (make-regexp "<:[[:space:]]*(.*?)[[:space:]]*:>"))
 
 (define (render-template-string template-str context-alist)
-  "Replaces all <: scheme-expression :> occurrences with their evaluated results."
-  (let loop
-    ((offset 0)
-     (acc ""))
-    (let ((m (regexp-exec rune-regex template-str offset)))
-      (if (not m)
-          (string-append acc
-                         (substring template-str offset))
-          (let* ((start (match:start m 0))
-                 (end (match:end m 0))
-                 (expr-str (match:substring m 1))
-                 (prefix (substring template-str offset start))
-                 (evaluated (eval-rune-token expr-str context-alist)))
-            (loop end
-                  (string-append acc prefix evaluated)))))))
+  "Replaces all <: scheme-expression :> tags with evaluated results."
+  (let ((eval-env (make-context-module context-alist)))
+    (let loop
+      ((offset 0)
+       (acc ""))
+      (let ((m (regexp-exec rune-regex template-str offset)))
+        (if (not m)
+            (string-append acc
+                           (substring template-str offset))
+            (let* ((start (match:start m 0))
+                   (end (match:end m 0))
+                   (expr-str (match:substring m 1))
+                   (prefix (substring template-str offset start))
+                   (evaluated (eval-rune-token expr-str eval-env)))
+              (loop end
+                    (string-append acc prefix evaluated))))))))
 
 (define (render-template-directory src-dir dest-dir context-alist)
-  "Recursively copies and renders template directory structures."
+  "Recursively renders and outputs directory structure and files."
   (mkdir-p dest-dir)
   (let ((entries (scandir src-dir
                           (lambda (f)
                             (not (member f
                                          '("." "..")))))))
     (for-each (lambda (entry)
-                (let* ((rendered-entry (render-template-string entry
-                                                               context-alist))
-                       (src-path (format #f "~a/~a" src-dir entry))
-                       (dest-path (format #f "~a/~a" dest-dir rendered-entry)))
-                  (if (eq? 'directory
-                           (stat:type (stat src-path)))
-                      (render-template-directory src-path dest-path
-                                                 context-alist)
-                      (let* ((raw (call-with-input-file src-path
-                                    get-string-all))
-                             (rendered (render-template-string raw
-                                                               context-alist)))
-                        (call-with-output-file dest-path
-                          (lambda (port)
-                            (display rendered port)))))))
+                ;; Ignore template manifest/valg files when rendering output workspace
+                (unless (member entry
+                                '("valg.scm" "manifest.scm"))
+                  (let* ((rendered-entry (render-template-string entry
+                                          context-alist))
+                         (src-path (format #f "~a/~a" src-dir entry))
+                         (dest-path (format #f "~a/~a" dest-dir rendered-entry)))
+                    (if (eq? 'directory
+                             (stat:type (stat src-path)))
+                        (render-template-directory src-path dest-path
+                                                   context-alist)
+                        (let* ((raw (call-with-input-file src-path
+                                      get-string-all))
+                               (rendered (render-template-string raw
+                                          context-alist)))
+                          (call-with-output-file dest-path
+                            (lambda (port)
+                              (display rendered port))))))))
               (or entries
                   '()))))
 
