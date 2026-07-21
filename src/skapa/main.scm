@@ -115,6 +115,8 @@ and outputs the generated directory structure to dest-dir."
                                 (not (member f
                                              '("." "..")))))
                      '())))
+    (unless (not (null? entries))
+      (error "No files found for this template: ~a" src-dir))
     (for-each (lambda (entry)
                 (let* ((rendered-entry (render-template entry context))
                        (src-path (format #f "~a/~a" src-dir entry))
@@ -124,6 +126,41 @@ and outputs the generated directory structure to dest-dir."
                       (let* ((raw-content (read-file-string src-path))
                              (rendered (render-template raw-content context)))
                         (write-file-string dest-path rendered))))) entries)))
+
+(define (list-templates resources-dir)
+  "Scans the resources/templates directory and returns a list of available template names."
+  (let* ((templates-dir (format #f "~a/templates" resources-dir))
+         (entries (scandir templates-dir
+                           (lambda (file)
+                             (not (member file
+                                          '("." "..")))))))
+    (if entries
+        (filter (lambda (entry)
+                  (let ((full-path (format #f "~a/~a" templates-dir entry)))
+                    (directory? full-path))) entries)
+        '())))
+
+(define (prompt-template options resources)
+  "Retrieves template choice from CLI flags, or interactively lists available templates.
+Errors out if the selected template does not exist."
+  (let ((available-templates (list-templates resources)))
+    (when (null? available-templates)
+      (error "No templates found in resources directory" resources))
+
+    (let* ((default-template (if (member "simple-readme" available-templates)
+                                 "simple-readme"
+                                 (car available-templates)))
+           (prompt-msg (format #f "> Choose a template [~a]: "
+                               (string-join available-templates "/")))
+           (chosen (or (option-ref options
+                                   'template #f)
+                       (prompt-user prompt-msg default-template))))
+      
+      (if (member chosen available-templates) chosen
+          (error (format #f
+                  "Template '~a' does not exist. Available templates: ~a"
+                  chosen
+                  (string-join available-templates ", ")))))))
 
 ;; =========================================================================
 ;; Crossroads Logic Manager
@@ -166,9 +203,7 @@ All rights reserved. Proprietary property of **~a**.
   (log-info s "Gathering materials for the forge...\n")
   (let* ((resources (option-ref options
                                 'resources #f))
-         (template-name (get-option options
-                                    'template "> Enter template name: "
-                                    "simple-readme"))
+         (template-name (prompt-template options resources))
          (name (get-option options
                            'name "> Enter project name: " "my-project"))
          (creator (get-option options
@@ -197,7 +232,7 @@ All rights reserved. Proprietary property of **~a**.
          (src-template-dir (format #f "~a/templates/~a" resources
                                    template-name))
          (dest-project-dir (format #f "dist/~a" name)))
-
+    
     (log-info s "\nForging files...\n")
     (catch #t
            (lambda ()
