@@ -37,7 +37,6 @@
               #:prefix license:))
 
 (packages->manifest (list guile-3.0
-                          direvent
                           texinfo
                           watchexec
                           guile-scriba
