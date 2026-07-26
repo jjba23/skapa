@@ -31,6 +31,84 @@ Framework: ΔΔ framework ΔΔ
 
 -----------------
 
+Here are new Org-mode sections for the ~skapa~ README, designed to be placed between the introduction and the existing technical details, along with a revised contributing section that explicitly asks for community templates.
+
+You can copy and paste the blocks below into your existing ~README.org~.
+
+---
+
+* Usage
+
+~skapa~ is designed to be interactive and simple to use.
+
+ Launch the Wizard
+
+Simply run the command to start the interactive scaffolding wizard:
+
+#+BEGIN_SRC sh
+skapa
+#+END_SRC
+
+The wizard will guide you through:
+
+1. Choosing a project template from the available resources.
+2. Answering specific questions defined by that template (e.g., project name, license, features to include).
+3. Generating the final project structure in a new directory based on your project name.
+
+----------------------
+
+[[https://jointhefreeworld.org/static-assets/skapa/skapa-small.png]]
+
+--------------
+
+You can see all available options by running:
+
+#+BEGIN_SRC sh
+skapa --help
+#+END_SRC
+
+Example of common options (if implemented in the template valg):
+
+#+BEGIN_SRC sh
+skapa --template web-app --output my-new-app --project-name "My Awesome App"
+#+END_SRC
+
+---
+
+
+* How It Works
+
+~skapa~ is written entirely in [[[https://www.gnu.org/software/guile/](https://www.gnu.org/software/guile/)][GNU Guile Scheme]]. It processes project templates using a powerful combining of flat-file copying and expressive Scheme evaluation.
+
+ The Template Structure
+
+Templates reside in the ~resources/templates/~ directory of the distribution (or your local Guix profile data directory). A ~skapa~ template consists of:
+
+1. **A ~contents/~ directory:** Contains the static and dynamic files of the template.
+2. **A ~valg.scm~ file:** A Guile Scheme association list defining the template's metadata and interactive prompts.
+
+Files inside the ~contents/~ directory can contain *$\Delta\Delta$ Expressions*. When running the wizard, ~skapa~ captures your answers, evaluates any Scheme code inside these expressions, and writes the transformed result to your new project directory.
+
+
+-------
+
+
+* Community Templates
+
+~skapa~ wants your templates! 🖐🏼
+
+If you have a workflow or project structure that you repeatedly use, consider contributing it as a template to the project.
+
+ How to Contribute a Template?
+
+1. Look at the existing templates in ~resources/templates/~.
+2. Create a new directory following the same structure (~contents/~ + ~valg.scm~).
+3. Use ~ΔΔ ... ΔΔ~ in your content files to make them dynamic. Remember you have the full power of Lisp at your disposal there.
+4.  Fine-tune your ~valg.scm~ declaration.
+5. Open a pull request!
+
+--------------
+
 Example Template Valg in Action, drop a new template folder with its own valg.scm:
 
 ~resources/templates/web-app/valg.scm~
@@ -57,6 +135,7 @@ Example Template Valg in Action, drop a new template folder with its own valg.sc
 
 
 --------------
+
 
 * Licensing
 
