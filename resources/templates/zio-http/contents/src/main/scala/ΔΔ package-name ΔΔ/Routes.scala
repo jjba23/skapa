@@ -5,7 +5,6 @@ import zio.http._
 
 object AppRoutes:
 
-  // Idiomatic ZIO HTTP 3.x correlation ID middleware
   val correlationIdMiddleware: Middleware[Any] =
     Middleware.logAnnotate { req =>
       val cid = req.headers
@@ -20,7 +19,7 @@ object AppRoutes:
       Method.GET / "health" -> handler(Response.text("OK")),
       Method.GET / "hello"  -> handler {
         for
-          _ <- ZIO.logInfo("Handling hello endpoint")
+          _ <- ZIO.logAnnotate("endpoint", "/hello")(ZIO.logInfo("Handling endpoint"))
         yield Response.text("Hello World!")
       }
     ) @@ correlationIdMiddleware

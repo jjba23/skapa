@@ -7,13 +7,13 @@ object RoutesSpec extends ZIOSpecDefault:
 
   def spec =
     suite("Routes")(
-      test("GET / returns Hello, world!") {
+      test("GET /hello returns Hello World!") {
 
         for {
           response <- AppRoutes.routes.runZIO(
-            Request.get(URL.decode("/").toOption.get)
+            Request.get(URL.decode("/hello").toOption.get)
           )
           body <- response.body.asString
-        } yield assertTrue(body == "Hello, world!")
+        } yield assertTrue(body == "Hello World!")
       }
     )

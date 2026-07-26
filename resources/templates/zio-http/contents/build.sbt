@@ -13,6 +13,8 @@ lazy val root = project
     updateOptions      := updateOptions.value.withLatestSnapshots(false),
     evictionErrorLevel := Level.Error,
 
+    Compile / run / fork := true,
+
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio"              % zioVersion,
       "dev.zio" %% "zio-http"         % zioHttpVersion,
