@@ -1,0 +1,99 @@
+project := `basename "$(pwd)"`
+version := "local"
+
+default:
+    @just --list --unsorted
+
+# Run linting and analysis
+lint:
+    ./gradlew ktlintCheck
+
+# Format project's source code
+lint-format:
+    ./gradlew ktlintFormat
+
+# Compile (main sources only, no test sources)
+[group("gradle")]
+compile:
+    ./gradlew compileKotlin
+
+# Compile all sources and run tests
+[group("gradle")]
+build:
+    ./gradlew build
+
+# Run unit tests
+[group("gradle")]
+test *args:
+    ./gradlew test {{ args }} --rerun-tasks --stacktrace
+
+# Run the application
+[group("gradle")]
+run:
+    SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
+    ./gradlew bootRun
+
+# Clean all compiled classes
+[group("gradle")]
+clean:
+    ./gradlew clean
+
+[group("gradle")]
+write-locks:
+    ./gradlew dependencies --write-locks
+
+# Clean all compiled classes and build
+[group("gradle")]
+rebuild:
+    ./gradlew clean build
+
+_podman-build target suffix="":
+    podman build \
+        --target {{ target }} \
+        --tag {{ project }}:{{ version }}{{ suffix }} \
+        --secret type=env,id=gh-packages-username,src=GH_PACKAGES_USERNAME \
+        --secret type=env,id=gh-packages-token,src=GH_PACKAGES_TOKEN \
+        .
+
+# Build a -build image (equivalent to "Build" stage in CI/CD)
+[group("podman")]
+podman-build: (_podman-build "build" "-build")
+
+# Build and run a -test image (equivalent to "Test" stage in CI/CD)
+[group("podman")]
+podman-test: (_podman-build "test" "-test")
+    podman run \
+        --rm \
+        --interactive \
+        --tty \
+        --volume /var/run/podman.sock.raw:/var/run/podman.sock \
+        {{ project }}:{{ version }}-test
+
+# Build and run a -final image (equivalent to "Publish" and "Deploy" stages in CI/CD)
+[group("podman")]
+podman-run: (_podman-build "final")
+    podman run \
+        --rm \
+        --interactive \
+        --tty \
+        --publish-all \
+        --name {{ project }} \
+        --env OTEL_JAVAAGENT_ENABLED=false \
+        {{ project }}:{{ version }}
+
+# Stop a running container
+[group("podman")]
+podman-stop:
+    podman stop {{ project }}
+
+metrics-scrape:
+    podman pull prom/prometheus
+    podman run --name prometheus -d -p 9090:9090 prom/prometheus
+
+
+send-mail:
+    kotlinc -script dev/scripts/send-mail.kts -- src/test/resources/fixtures/simple-send-mail-payload.json
+
+dependencies-upgrade:
+    ./gradlew versionCatalogUpdate
+    ./gradlew versionCatalogApplyUpdates

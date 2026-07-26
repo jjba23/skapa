@@ -1,0 +1,40 @@
+---
+application:
+  sendgrid:
+    api-key: "your-api-key"
+
+# --- Spring configuration ---
+spring:
+  application:
+    name: mail-gateway
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
+
+# --- Server Configuration ---
+server:
+  port: 8080
+  shutdown: graceful
+
+# --- Spring Boot Actuator (Monitoring & Management) ---
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      base-path: /
+
+  # --- Metrics & Observability (Micrometer) ---
+  metrics:
+    tags:
+      # Appends a global tag 'application' to every metric recorded by the application.
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            # Enables histogram buckets for HTTP server requests.
+            requests: true
+

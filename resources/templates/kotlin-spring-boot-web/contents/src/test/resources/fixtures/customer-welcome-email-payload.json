@@ -1,0 +1,29 @@
+{
+  "from": {
+    "emailAddress": "noreply@vandebron.nl",
+    "name": "Vandebron"
+  },
+  "to": {
+    "emailAddress": "newcustomer@example.com",
+    "name": "Sarah"
+  },
+  "subject": "Welcome to Vandebron! 🌿",
+  "templateId": "d-957b2be8416841d5902cf2da8cda8dab",
+  "cc": [],
+  "bcc": [],
+  "dynamicTemplateData": {
+    "EMAIL_TITLE": "Welcome to Vandebron!",
+    "RECIPIENT_NAME": "Sarah",
+    "START_DATE": "2026-04-01",
+    "PORTAL_HREF": "https://mijn.vandebron.nl",
+    "COMPANY_NAME": "Vandebron",
+    "CURRENT_YEAR": "2026"
+  },
+  "customHeaders": {
+    "X-Salesforce-Object-Id": "98765"
+  },
+  "customArgs": {
+    "recordId": "98765",
+    "campaign": "Spring_Onboarding_2026"
+  }
+}

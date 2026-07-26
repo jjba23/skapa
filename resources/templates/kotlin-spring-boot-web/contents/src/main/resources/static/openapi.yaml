@@ -1,0 +1,182 @@
+---
+openapi: 3.1.0
+
+# API Metadata: Defines the title, version, and a high-level overview of the API.
+info:
+  title: Mail Gateway REST API
+  version: '1.0'
+  description: |
+    Central email gateway handling programmatic mail dispatch for Vandebron's back-end microservices.
+
+servers: 
+  - url: http://localhost:8080
+    description: Local server
+
+# Tags used to logically group operations in documentation tools like Swagger UI.
+tags:
+  - name: mail
+    description: |
+      Email delivery gateway
+
+# --- API Endpoints ---
+paths:
+  # Main endpoint for dispatching transactional/templated emails.
+  /v2/mail/send:
+    post:
+      tags:
+        - mail
+      summary: Send an email
+      description: |
+        Route for sending mail.
+      operationId: sendMail
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailDeliveryRequest'
+        required: true
+      responses:
+        # 202 ACCEPTED
+        '202':
+          description: |
+            Accepted mail delivery request (No content return)
+        # 500 Internal Server Error
+        '500':
+          description: |
+            Internal Server Error - Mail delivery failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailDeliveryFailure'
+
+
+# --- Reusable Schemas & Components ---
+components:
+  schemas:
+    
+    # Schema representing a single email attachment.
+    MailAttachment:
+      type: object
+      additionalProperties: false
+      properties:
+        filename:
+          type: string
+          minLength: 1
+        mimeType:
+          type: string
+          minLength: 1
+          example: application/pdf
+        content:
+          type: string
+          minLength: 1
+          description: |
+            Base64-encoded file content.
+      required:
+        - filename
+        - mimeType
+        - content
+
+    # The core payload structure expected by the /v2/mail/send endpoint.
+    MailDeliveryRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        subject:
+          type: string
+          minLength: 1
+        to:
+          $ref: '#/components/schemas/MailParticipant'
+        from:
+          $ref: '#/components/schemas/MailParticipant'
+        templateId:
+          type: string
+          minLength: 1
+          example: 123456
+        replyTo:
+          anyOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/MailParticipant'
+          description: |
+            The designated recipient for replies. 
+            If omitted, replies will route back to the 'from' address.
+          default: null
+        cc:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailParticipant'
+          description: |
+            Secondary recipients who will receive a visible copy of the email.
+          default: [ ]
+          uniqueItems: true
+        bcc:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailParticipant'
+          default: [ ]
+          uniqueItems: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MailAttachment'
+          description: |
+            Files to attach to the email payload. 
+            Ensure the total size complies with the provider's maximum allowed limits.
+          default: [ ]
+          uniqueItems: true
+        customArgs:
+          type: object
+          additionalProperties:
+            type: string
+          description: |
+            Key-value metadata attached to the email. 
+            Useful for passing internal identifiers (like order IDs) that you want returned in delivery event webhooks.
+          default: { }
+        dynamicTemplateData:
+          type: object
+          additionalProperties:
+            type: string
+          description: |
+            The dynamic variables and data objects used to populate placeholders in the email template.
+          default: { }
+        customHeaders:
+          type: object
+          additionalProperties:
+            type: string
+          description: |
+            Custom headers to append to the outgoing email payload 
+            (e.g., 'X-Message-Type' or 'X-Campaign-ID').
+          default: { }
+      required:
+        - from
+        - to
+        - subject
+        - templateId
+
+    # Schema for the error response body when email delivery fails.
+    MailDeliveryFailure:
+      type: object
+      additionalProperties: false
+      properties:
+        cause:
+          type: string
+      required:
+        - cause
+
+    
+    # Reusable schema representing a sender or recipient.
+    MailParticipant:
+      type: object
+      additionalProperties: false
+      description: |
+        Entity representing a mail participant (either receiver, cc or bcc or sender)
+      properties:
+        emailAddress:
+          type: string
+          minLength: 1
+          format: email
+          example: someone@somewhere.mail.com
+        name:
+          type: [ string, 'null' ]
+          example: Someone Somewhere
+      required:
+        - emailAddress

@@ -1,0 +1,79 @@
+# Environment variables
+**/.env
+.envrc
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+
+# Logs
+*.log
+logs/
+
+# Local logback configs
+**/logback-local.xml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Spring Boot
+application-local*.yml
+application-local*.yaml
+application-local*.properties
+
+# Cursor
+.cursor/
+
+# Compiled class files
+*.class
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven (if used)
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Kotlin
+*.kt.swp
+*.kt~
+.ktlint
+.kotlin
+
+# Test results
+test-results/
+*.test
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
