@@ -23,6 +23,8 @@
   #:use-module (srfi srfi-13)
   #:export (render-template-string render-template-directory
                                    list-available-templates
+                                   mkdir-p
+                                   rm-rf
                                    load-project-memory save-project-memory))
 
 ;;; ANSI Escape Codes for Terminal Styling
@@ -216,3 +218,28 @@
                                                               templates-dir f))))))))))
     (or entries
         '())))
+
+(define (rm-rf path)
+  "Recursively and forcefully removes PATH (file or directory tree).
+Mimics 'rm -rf' by ignoring non-existent paths and handling symlinks safely."
+  (catch 'system-error
+    (lambda ()
+      (let ((st (false-if-exception (lstat path))))
+        (when st
+          (if (eq? 'directory (stat:type st))
+              (begin
+                ;; Read directory entries (excluding '.' and '..')
+                (let ((entries (scandir path
+                                        (lambda (file)
+                                          (not (member file '("." "..")))))))
+                  (when entries
+                    (for-each (lambda (entry)
+                                (rm-rf (string-append path "/" entry)))
+                              entries)))
+                ;; Remove now-empty directory
+                (rmdir path))
+              ;; Remove regular files, symlinks, sockets, FIFOs, etc.
+              (delete-file path)))))
+    (lambda (key . args)
+      ;; Silently swallow system errors (non-existent path, permission error) to match -f
+      #f)))

@@ -94,6 +94,7 @@ Forging project '~a' using template '~a'...
 " project-name
             template-name)
 
+    (rm-rf dest-dir)
     (render-template-directory contents-dir dest-dir final-ctx)
 
     (copy-license-file lic-id resources dest-dir final-ctx)
