@@ -33,7 +33,7 @@ kotlin {
 fabrikt {
     generate("ΔΔ project-name ΔΔ") {
         apiFile = file("src/main/resources/static/openapi.yaml")
-        basePackage = "mailgateway.openapi"
+        basePackage = "ΔΔ package-name ΔΔ.openapi"
         model {
             generate = enabled
             sealedInterfacesForOneOf = enabled

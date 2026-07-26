@@ -21,18 +21,21 @@
   #:use-module (ice-9 ftw)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-13)
-  #:export (render-template-string
-            render-template-directory
-            list-available-templates
-            load-project-memory
-            save-project-memory))
+  #:export (render-template-string render-template-directory
+                                   list-available-templates
+                                   load-project-memory save-project-memory))
 
 ;;; ANSI Escape Codes for Terminal Styling
-(define ansi-reset "\x1b[0m")
-(define ansi-bold  "\x1b[1m")
-(define ansi-green "\x1b[32m")
-(define ansi-cyan  "\x1b[36m")
-(define ansi-gray  "\x1b[90m")
+(define ansi-reset
+  "\x1b[0m")
+(define ansi-bold
+  "\x1b[1m")
+(define ansi-green
+  "\x1b[32m")
+(define ansi-cyan
+  "\x1b[36m")
+(define ansi-gray
+  "\x1b[90m")
 
 ;;; Project-Level Memory Functions
 
@@ -44,36 +47,40 @@
   "Loads existing project scaffolding context from dest-dir/.skapa.scm if present."
   (let ((mem-path (project-memory-file dest-dir)))
     (catch #t
-      (lambda ()
-        (if (file-exists? mem-path)
-            (with-input-from-file mem-path read)
-            '()))
-      (lambda _ '()))))
+           (lambda ()
+             (if (file-exists? mem-path)
+                 (with-input-from-file mem-path
+                   read)
+                 '()))
+           (lambda _
+             '()))))
 
 (define (save-project-memory dest-dir context-alist)
   "Saves scaffolding context into dest-dir/.skapa.scm for future re-scaffolding sessions."
   (let ((mem-path (project-memory-file dest-dir)))
     (catch #t
-      (lambda ()
-        (mkdir-p dest-dir)
-        (with-output-to-file mem-path
-          (lambda ()
-            (display ";;; Skapa project scaffolding manifest\n")
-            (write context-alist)
-            (newline))))
-      (lambda _ #f))))
+           (lambda ()
+             (mkdir-p dest-dir)
+             (with-output-to-file mem-path
+               (lambda ()
+                 (display ";;; Skapa project scaffolding manifest\n")
+                 (write context-alist)
+                 (newline))))
+           (lambda _
+             #f))))
 
 (define (key-equal? k1 k2)
   "Case-insensitive comparison for symbol or string keys."
-  (string-ci=? (format #f "~a" k1) (format #f "~a" k2)))
+  (string-ci=? (format #f "~a" k1)
+               (format #f "~a" k2)))
 
 (define (merge-context base-alist override-alist)
   "Merges override-alist onto base-alist, replacing matching keys."
   (fold (lambda (pair acc)
           (cons pair
-                (filter (lambda (p) (not (key-equal? (car p) (car pair))))
-                        acc)))
-        base-alist
+                (filter (lambda (p)
+                          (not (key-equal? (car p)
+                                           (car pair)))) acc))) base-alist
         override-alist))
 
 ;;; Directory Engine Primitives
@@ -87,13 +94,13 @@
                  (not (string=? parent ".")))
         (mkdir-p parent))
       (catch 'system-error
-        (lambda ()
-          (mkdir path))
-        (lambda (key . args)
-          (unless (and (file-exists? path)
-                       (eq? 'directory
-                            (stat:type (stat path))))
-            (apply throw key args)))))))
+             (lambda ()
+               (mkdir path))
+             (lambda (key . args)
+               (unless (and (file-exists? path)
+                            (eq? 'directory
+                                 (stat:type (stat path))))
+                 (apply throw key args)))))))
 
 (define (make-context-module context-alist)
   "Creates a fresh evaluation environment populated with variables from context-alist."
@@ -109,26 +116,28 @@
 (define (eval-rune-token token-str context-module)
   "Parses and evaluates all embedded Scheme expressions in token-str."
   (catch #t
-    (lambda ()
-      (let* ((port (open-input-string token-str))
-             (exprs (let loop
-                      ((acc '()))
-                      (let ((datum (read port)))
-                        (if (eof-object? datum)
-                            (reverse acc)
-                            (loop (cons datum acc)))))))
-        (cond
-          ((null? exprs)
-           "")
-          (else (let ((res (eval `(begin ,@exprs) context-module)))
-                  (cond
-                    ((boolean? res)
-                     (if res "true" "false"))
-                    ((or (null? res) (not res))
-                     "")
-                    (else (format #f "~a" res))))))))
-    (lambda (key . args)
-      (format #f "[[Template Error (~a): ~a: ~a]]" key token-str args))))
+         (lambda ()
+           (let* ((port (open-input-string token-str))
+                  (exprs (let loop
+                           ((acc '()))
+                           (let ((datum (read port)))
+                             (if (eof-object? datum)
+                                 (reverse acc)
+                                 (loop (cons datum acc)))))))
+             (cond
+               ((null? exprs)
+                "")
+               (else (let ((res (eval `(begin
+                                         ,@exprs) context-module)))
+                       (cond
+                         ((boolean? res)
+                          (if res "true" "false"))
+                         ((or (null? res)
+                              (not res))
+                          "")
+                         (else (format #f "~a" res))))))))
+         (lambda (key . args)
+           (format #f "[[Template Error (~a): ~a: ~a]]" key token-str args))))
 
 (define (render-template-string template-str context-alist)
   "Replaces all ΔΔ scheme-expression ΔΔ tags with evaluated results."
@@ -153,30 +162,43 @@
                     (loop (+ end 2)
                           (string-append acc prefix evaluated))))))))))
 
-(define* (render-template-directory src-dir dest-dir context-alist #:key (verbose? #t))
+(define* (render-template-directory src-dir dest-dir context-alist
+                                    #:key (verbose? #t))
   "Recursively renders directory structure from src-dir into dest-dir, preserving project memory."
   (let* ((existing-mem (load-project-memory dest-dir))
          (effective-context (merge-context existing-mem context-alist)))
     (mkdir-p dest-dir)
     (let ((entries (scandir src-dir
                             (lambda (f)
-                              (not (member f '("." ".." "valg.scm" ".DS_Store" ".skapa.scm")))))))
+                              (not (member f
+                                           '("." ".." "valg.scm" ".DS_Store"
+                                             ".skapa.scm")))))))
       (for-each (lambda (entry)
-                  (let* ((rendered-entry (render-template-string entry effective-context))
+                  (let* ((rendered-entry (render-template-string entry
+                                          effective-context))
                          (src-path (format #f "~a/~a" src-dir entry))
                          (dest-path (format #f "~a/~a" dest-dir rendered-entry)))
-                    (if (eq? 'directory (stat:type (stat src-path)))
+                    (if (eq? 'directory
+                             (stat:type (stat src-path)))
                         (begin
                           (when verbose?
-                            (format #t "  ~a[dir]~a  ~a\n" ansi-cyan ansi-reset dest-path))
-                          (render-template-directory src-path dest-path effective-context #:verbose? verbose?))
-                        (let* ((raw (call-with-input-file src-path get-string-all))
-                               (rendered (render-template-string raw effective-context)))
+                            (format #t "  ~a[dir]~a  ~a\n" ansi-cyan
+                                    ansi-reset dest-path))
+                          (render-template-directory src-path dest-path
+                                                     effective-context
+                                                     #:verbose? verbose?))
+                        (let* ((raw (call-with-input-file src-path
+                                      get-string-all))
+                               (rendered (render-template-string raw
+                                          effective-context)))
                           (call-with-output-file dest-path
-                            (lambda (port) (display rendered port)))
+                            (lambda (port)
+                              (display rendered port)))
                           (when verbose?
-                            (format #t "  ~a✔ rendered~a ~a\n" ansi-green ansi-reset dest-path))))))
-                (or entries '())))
+                            (format #t "  ~a✔ rendered~a ~a\n" ansi-green
+                                    ansi-reset dest-path))))))
+                (or entries
+                    '())))
     ;; Save project-specific memory manifest
     (save-project-memory dest-dir effective-context)))
 
@@ -186,7 +208,11 @@
          (entries (and (file-exists? templates-dir)
                        (scandir templates-dir
                                 (lambda (f)
-                                  (and (not (member f '("." "..")))
+                                  (and (not (member f
+                                                    '("." "..")))
                                        (eq? 'directory
-                                            (stat:type (stat (format #f "~a/~a" templates-dir f))))))))))
-    (or entries '())))
+                                            (stat:type (stat (format #f
+                                                              "~a/~a"
+                                                              templates-dir f))))))))))
+    (or entries
+        '())))

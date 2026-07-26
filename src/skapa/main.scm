@@ -39,7 +39,8 @@
                                  "No templates found in resources/templates directory!")
                                 (prompt-choice "> Choose template"
                                                avail-templates
-                                               (car avail-templates)))))
+                                               (car avail-templates)
+                                               #f))))
 
          (template-dir (format #f "~a/templates/~a" resources template-name))
          (contents-dir (format #f "~a/contents" template-dir))
@@ -69,7 +70,7 @@
                           (member cli-license available-licenses string-ci=?)
                           cli-license)
                      (prompt-choice "> Choose license" available-licenses
-                                    "gpl3")))
+                                    "gpl3" #f)))
 
          (lic-ctx (load-license-context lic-id resources))
 
@@ -87,7 +88,7 @@
                          base-ctx))
 
          (dest-dir (format #f "dist/~a" project-name)))
-    
+
     (format #t "
 Forging project '~a' using template '~a'...
 " project-name
