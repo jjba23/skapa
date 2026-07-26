@@ -17,28 +17,22 @@ Example Template Valg in Action, drop a new template folder with its own valg.sc
 ~resources/templates/web-app/valg.scm~
 
 #+begin_src scheme
-'((name . "Fullstack Web App")
-  (prompts . (((key . "project-name")
+((name . "Fullstack Web App")
+  (prompts . (((key . project-name)
                (prompt . "Project name")
                (type . string)
                (default . "my-web-app"))
 
-              ((key . "framework")
+              ((key . framework)
                (prompt . "Frontend Framework")
                (type . choice)
                (choices . ("vue" "react" "htmx"))
                (default . "htmx"))
 
-              ((key . "include-db")
+              ((key . include-db)
                (prompt . "Include PostgreSQL configuration?")
                (type . boolean)
-               (default . #t))
-
-              ((key . "license")
-               (prompt . "Choose software license")
-               (type . choice)
-               (choices . ("mit" "gpl3" "apache2"))
-               (default . "mit")))))
+               (default . #t)))))
 #+end_src
 
 ~<: ... :>~ Expressions Inside Template Files
