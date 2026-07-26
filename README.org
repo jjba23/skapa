@@ -57,9 +57,6 @@ The wizard will guide you through:
 
 ----------------------
 
-[[https://jointhefreeworld.org/static-assets/skapa/skapa-small.png]]
-
---------------
 
 You can see all available options by running:
 
@@ -73,8 +70,7 @@ Example of common options (if implemented in the template valg):
 skapa --template web-app --output my-new-app --project-name "My Awesome App"
 #+END_SRC
 
----
-
+---------
 
 * How It Works
 
@@ -133,6 +129,9 @@ Example Template Valg in Action, drop a new template folder with its own valg.sc
 #+end_src
 
 
+--------------
+
+[[https://jointhefreeworld.org/static-assets/skapa/skapa-small.png]]
 
 --------------
 
