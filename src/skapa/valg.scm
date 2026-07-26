@@ -143,13 +143,14 @@
          (req-str (if required?
                       (format #f " ~a(required)~a" ansi-red ansi-reset) ""))
          (msg (format #f
-                      "~a?~a ~a~a~a~a: "
+                      "~a?~a ~a~a~a~a~a: "
                       ansi-green
                       ansi-reset
                       ansi-bold
                       question
                       ansi-reset
                       req-str
+                      (if memory-val (format #f "[mem: ~a]" memory-val) "")
                       (if (string-null? hint) ""
                           (string-append " " hint)))))
     (display msg)
@@ -181,7 +182,7 @@
                                         (if memory-val "yes" "no") #f)))
          (default-toggle (if effective-default "Y/n" "y/N"))
          (msg (format #f
-                      "~a?~a ~a~a ~a[~a]~a~a: "
+                      "~a?~a ~a~a ~a[~a]~a~a~a: "
                       ansi-green
                       ansi-reset
                       ansi-bold
@@ -189,6 +190,7 @@
                       ansi-reset
                       ansi-gray
                       default-toggle
+                      (if memory-val (format #f "[mem: ~a]" memory-val) "")
                       ansi-reset
                       (if (string-null? hint) ""
                           (string-append " " hint)))))
@@ -213,7 +215,7 @@
   (let* ((effective-default (or memory-val spec-default))
          (default-str (and effective-default
                            (format #f "~a" effective-default))))
-    
+
     ;; 1. Print question header
     (format #t
             "~a?~a ~a~a\n"

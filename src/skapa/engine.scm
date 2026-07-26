@@ -18,6 +18,8 @@
 (define-module (skapa engine)
   #:declarative? #t
   #:use-module (ice-9 textual-ports)
+  #:use-module (ice-9 binary-ports)
+  #:use-module (rnrs bytevectors)
   #:use-module (ice-9 ftw)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-13)
@@ -25,7 +27,9 @@
                                    list-available-templates
                                    mkdir-p
                                    rm-rf
-                                   load-project-memory save-project-memory))
+                                   binary-file?
+                                   load-project-memory
+                                   save-project-memory))
 
 ;;; ANSI Escape Codes for Terminal Styling
 (define ansi-reset
@@ -38,6 +42,254 @@
   "\x1b[36m")
 (define ansi-gray
   "\x1b[90m")
+
+;;; Binary File Detection Engine
+
+(define (file-extension filepath)
+  "Extracts file extension from filepath, or empty string if none."
+  (let ((dot-idx (string-rindex filepath #\.)))
+    (if dot-idx
+        (substring filepath
+                   (+ dot-idx 1)) "")))
+
+;;; Comprehensive Hash Table of Known Binary Extensions
+(define %binary-extensions-hash
+  (let ((ht (make-hash-table 250)))
+    (for-each (lambda (ext)
+                (hash-set! ht ext #t))
+              '("exe" "dll"
+                "so"
+                "dylib"
+                "bin"
+                "elf"
+                "o"
+                "a"
+                "lib"
+                "obj"
+                "out"
+                "app"
+                "apk"
+                "aab"
+                "ipa"
+                "deb"
+                "rpm"
+                "snap"
+                "flatpak"
+                "msi"
+                "msix"
+                "sys"
+                "drv"
+                "scr"
+                "cpl"
+                "ocx"
+                "ax"
+                "pyc"
+                "pyo"
+                "pyd"
+                "class"
+                "jar"
+                "war"
+                "ear"
+                "elc"
+                "luac"
+                "beam"
+                "wasm"
+                "wat"
+                "rbc"
+                "nupkg"
+                "nib"
+                "bpl"
+                "dcu"
+                "zip"
+                "tar"
+                "gz"
+                "tgz"
+                "bz2"
+                "tbz2"
+                "xz"
+                "txz"
+                "7z"
+                "rar"
+                "zst"
+                "tzst"
+                "lz"
+                "lz4"
+                "lzh"
+                "cab"
+                "ar"
+                "cpio"
+                "iso"
+                "dmg"
+                "img"
+                "vmdk"
+                "vhd"
+                "vhdx"
+                "qcow2"
+                "wim"
+                "sit"
+                "sitx"
+                "ace"
+                "alz"
+                "z"
+                "png"
+                "jpg"
+                "jpeg"
+                "gif"
+                "webp"
+                "ico"
+                "bmp"
+                "tiff"
+                "tif"
+                "heic"
+                "heif"
+                "avif"
+                "psd"
+                "psb"
+                "ai"
+                "xcf"
+                "cur"
+                "icns"
+                "tga"
+                "dds"
+                "raw"
+                "cr2"
+                "cr3"
+                "nef"
+                "arw"
+                "dng"
+                "orf"
+                "rw2"
+                "pef"
+                "raf"
+                "mp3"
+                "flac"
+                "wav"
+                "ogg"
+                "m4a"
+                "aiff"
+                "aif"
+                "wma"
+                "opus"
+                "aac"
+                "mid"
+                "midi"
+                "alac"
+                "ape"
+                "mpc"
+                "m4b"
+                "ra"
+                "rm"
+                "mp4"
+                "mkv"
+                "mov"
+                "avi"
+                "wmv"
+                "flv"
+                "webm"
+                "m4v"
+                "mpg"
+                "mpeg"
+                "3gp"
+                "3g2"
+                "ts"
+                "m2ts"
+                "vob"
+                "ogv"
+                "rmvb"
+                "mxf"
+                "ttf"
+                "otf"
+                "woff"
+                "woff2"
+                "eot"
+                "fon"
+                "pfb"
+                "pfm"
+                "ttc"
+                "pdf"
+                "doc"
+                "docx"
+                "xls"
+                "xlsx"
+                "ppt"
+                "pptx"
+                "odt"
+                "ods"
+                "odp"
+                "epub"
+                "mobi"
+                "azw"
+                "azw3"
+                "pages"
+                "numbers"
+                "key"
+                "rtf"
+                "db"
+                "sqlite"
+                "sqlite3"
+                "mdb"
+                "accdb"
+                "rdb"
+                "ibd"
+                "frm"
+                "dat"
+                "binlog"
+                "parquet"
+                "duckdb"
+                "orc"
+                "ldb"
+                "sst"
+                "pack"
+                "idx"
+                "stl"
+                "fbx"
+                "blend"
+                "dae"
+                "step"
+                "stp"
+                "iges"
+                "glb"
+                "usdz"
+                "3ds"
+                "max"
+                "mb"
+                "ma"
+                "unitypackage"
+                "uasset"
+                "pak"
+                "jks"
+                "keystore"
+                "p12"
+                "pfx"
+                "der"
+                "dmp"
+                "dump"
+                "stackdump")) ht))
+
+(define (binary-extension? filepath)
+  "Checks if the file extension belongs to a known binary file format."
+  (let ((ext (string-downcase (file-extension filepath))))
+    (hash-ref %binary-extensions-hash ext #f)))
+
+(define (binary-file? filepath)
+  "Determines if a file is binary via extension whitelist or null-byte detection."
+  (or (binary-extension? filepath)
+      (catch #t
+             (lambda ()
+               (call-with-input-file filepath
+                 (lambda (port)
+                   (let ((bv (get-bytevector-n port 1024)))
+                     (if (or (eof-object? bv)
+                             (not bv)) #f
+                         (let loop
+                           ((i 0)
+                            (len (bytevector-length bv)))
+                           (if (>= i len) #f
+                               (if (zero? (bytevector-u8-ref bv i)) #t
+                                   (loop (+ i 1) len)))))))
+                 #:binary #t))
+             (lambda _
+               #f))))
 
 ;;; Project-Level Memory Functions
 
@@ -166,42 +418,68 @@
 
 (define* (render-template-directory src-dir dest-dir context-alist
                                     #:key (verbose? #t))
-  "Recursively renders directory structure from src-dir into dest-dir, preserving project memory."
+  "Recursively renders directory structure from src-dir into dest-dir, preserving project memory strictly at the root."
   (let* ((existing-mem (load-project-memory dest-dir))
          (effective-context (merge-context existing-mem context-alist)))
-    (mkdir-p dest-dir)
-    (let ((entries (scandir src-dir
-                            (lambda (f)
-                              (not (member f
-                                           '("." ".." "valg.scm" ".DS_Store"
-                                             ".skapa.scm")))))))
-      (for-each (lambda (entry)
-                  (let* ((rendered-entry (render-template-string entry
-                                          effective-context))
-                         (src-path (format #f "~a/~a" src-dir entry))
-                         (dest-path (format #f "~a/~a" dest-dir rendered-entry)))
-                    (if (eq? 'directory
-                             (stat:type (stat src-path)))
-                        (begin
-                          (when verbose?
-                            (format #t "  ~a[dir]~a  ~a\n" ansi-cyan
-                                    ansi-reset dest-path))
-                          (render-template-directory src-path dest-path
-                                                     effective-context
-                                                     #:verbose? verbose?))
-                        (let* ((raw (call-with-input-file src-path
-                                      get-string-all))
-                               (rendered (render-template-string raw
-                                          effective-context)))
-                          (call-with-output-file dest-path
-                            (lambda (port)
-                              (display rendered port)))
-                          (when verbose?
-                            (format #t "  ~a✔ rendered~a ~a\n" ansi-green
-                                    ansi-reset dest-path))))))
-                (or entries
-                    '())))
-    ;; Save project-specific memory manifest
+    
+    ;; Internal recursive worker function that handles filesystem traversal
+    (define (render-dir current-src current-dest)
+      (mkdir-p current-dest)
+      (let ((entries (scandir current-src
+                              (lambda (f)
+                                (not (member f
+                                             '("." ".." "valg.scm" ".DS_Store"
+                                               ".skapa.scm")))))))
+        (for-each (lambda (entry)
+                    (let* ((rendered-entry (render-template-string entry
+                                            effective-context))
+                           (src-path (format #f "~a/~a" current-src entry))
+                           (dest-path (format #f "~a/~a" current-dest
+                                              rendered-entry)))
+                      (cond
+                        ;; Case 1: Directory recursion
+                        ((eq? 'directory
+                              (stat:type (stat src-path)))
+                         (when verbose?
+                           (format #t "  ~a[dir]~a  ~a\n" ansi-cyan ansi-reset
+                                   dest-path))
+                         (render-dir src-path dest-path))
+
+                        ;; Case 2: Binary files (Direct byte-for-byte raw copy)
+                        ((binary-file? src-path)
+                         (copy-file src-path dest-path)
+                         (when verbose?
+                           (format #t "  ~a✔ copied (binary)~a ~a\n"
+                                   ansi-green ansi-reset dest-path)))
+
+                        ;; Case 3: Text files (Template String Substitution)
+                        (else (catch #t
+                                     (lambda ()
+                                       (let* ((raw (call-with-input-file src-path
+                                                     get-string-all))
+                                              (rendered (render-template-string
+                                                         raw effective-context)))
+                                         (call-with-output-file dest-path
+                                           (lambda (port)
+                                             (display rendered port)))
+                                         (when verbose?
+                                           (format #t "  ~a✔ rendered~a ~a\n"
+                                                   ansi-green ansi-reset
+                                                   dest-path))))
+                                     (lambda _
+                                       ;; Fallback to raw copy if UTF-8 string decoding fails
+                                       (copy-file src-path dest-path)
+                                       (when verbose?
+                                         (format #t
+                                          "  ~a✔ copied (binary fallback)~a ~a\n"
+                                          ansi-green ansi-reset dest-path))))))))
+                  (or entries
+                      '()))))
+
+    ;; 1. Execute directory rendering tree
+    (render-dir src-dir dest-dir)
+
+    ;; 2. Write `.skapa.scm` ONLY ONCE at the top-level project root
     (save-project-memory dest-dir effective-context)))
 
 (define (list-available-templates resources-dir)
@@ -220,26 +498,23 @@
         '())))
 
 (define (rm-rf path)
-  "Recursively and forcefully removes PATH (file or directory tree).
-Mimics 'rm -rf' by ignoring non-existent paths and handling symlinks safely."
+  "Recursively and forcefully removes PATH (file or directory tree)."
   (catch 'system-error
-    (lambda ()
-      (let ((st (false-if-exception (lstat path))))
-        (when st
-          (if (eq? 'directory (stat:type st))
-              (begin
-                ;; Read directory entries (excluding '.' and '..')
-                (let ((entries (scandir path
-                                        (lambda (file)
-                                          (not (member file '("." "..")))))))
-                  (when entries
-                    (for-each (lambda (entry)
-                                (rm-rf (string-append path "/" entry)))
-                              entries)))
-                ;; Remove now-empty directory
-                (rmdir path))
-              ;; Remove regular files, symlinks, sockets, FIFOs, etc.
-              (delete-file path)))))
-    (lambda (key . args)
-      ;; Silently swallow system errors (non-existent path, permission error) to match -f
-      #f)))
+         (lambda ()
+           (let ((st (false-if-exception (lstat path))))
+             (when st
+               (if (eq? 'directory
+                        (stat:type st))
+                   (begin
+                     (let ((entries (scandir path
+                                             (lambda (file)
+                                               (not (member file
+                                                            '("." "..")))))))
+                       (when entries
+                         (for-each (lambda (entry)
+                                     (rm-rf (string-append path "/" entry)))
+                                   entries)))
+                     (rmdir path))
+                   (delete-file path)))))
+         (lambda _
+           #f)))

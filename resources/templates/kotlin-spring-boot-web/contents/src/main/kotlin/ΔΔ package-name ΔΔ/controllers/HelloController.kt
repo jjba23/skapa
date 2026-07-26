@@ -2,16 +2,16 @@ package ΔΔpackage-nameΔΔ.controllers
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.withLoggingContext
-import mailgateway.openapi.controllers.V1HelloWorldController
-import mailgateway.services.SdkSendgridClient
+import ΔΔpackage-nameΔΔ.openapi.controllers.V1HelloWorldController
+import ΔΔpackage-nameΔΔ.services.SdkSendgridClient
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.http.HttpStatus
 
 @RestController
-class HelloWorldController(
+class HelloController(
     val sendgridClient: SdkSendgridClient,
-) : V1HelloWorldController {
+) : V1HelloController {
     private val logger = KotlinLogging.logger {}
 
     override fun hello(): ResponseEntity<String> {

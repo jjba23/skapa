@@ -14,7 +14,7 @@ servers:
 
 # --- API Endpoints ---
 paths:
-  /hello:
+  /v1/hello:
     get:
       summary: Get hello world message
       description: Returns a simple text greeting.
