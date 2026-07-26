@@ -9,5 +9,6 @@ object HttpServer:
     Server
       .serve(AppRoutes.routes)
       .provide(
-        Server.defaultWithPort(8080)
+        Server.defaultWithPort(8080),
+        InMemoryUserRepository.live
       )
