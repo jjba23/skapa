@@ -185,3 +185,12 @@ Far from rigid, absolute reproducibility empowers fearless experimentation:
   #+END_SRC
 - 🔄 *Transactional Upgrades & Rollbacks:* Experiment freely. If an update breaks, rollbacks are atomic and instantaneous.
 - *Unified Tooling:* One tool seamlessly handles dev shells, containers, system configs, and package builds.
+
+--------------
+
+** Hacking around
+
+#+begin_src shell
+cd ../../ && maak run && cd  dist/kkk && chmod +x gradlew && just test
+cd ../../ && maak run && cd  dist/kkk && chmod +x gradlew && just run
+#+end_src
