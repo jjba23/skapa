@@ -1,8 +1,0 @@
----
-site_name: 'mail-gateway'
-site_description: 'This is the documentation site for the mail-gateway project.'
-repo_url: 'https://github.com/Vandebron/mail-gateway'
-plugins:
-  - search
-  - techdocs-core
-  - awesome-nav

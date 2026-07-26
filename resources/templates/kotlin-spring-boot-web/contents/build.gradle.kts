@@ -31,7 +31,7 @@ kotlin {
 }
 
 fabrikt {
-    generate("mail-gateway") {
+    generate("<: project-name :>") {
         apiFile = file("src/main/resources/static/openapi.yaml")
         basePackage = "mailgateway.openapi"
         model {

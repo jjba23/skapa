@@ -6,7 +6,7 @@ application:
 # --- Spring configuration ---
 spring:
   application:
-    name: mail-gateway
+    name: <: project-name :>
   main:
     banner-mode: off
   threads:
@@ -37,4 +37,3 @@ management:
           server:
             # Enables histogram buckets for HTTP server requests.
             requests: true
-
