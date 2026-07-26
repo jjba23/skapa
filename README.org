@@ -8,12 +8,6 @@
 
 Project scaffolding and templating tool with the power of Lisp.  Quick-start your new projects with many of the ready templates.
 
-#+begin_quote
-Delightfully dynamic project scaffolding in the Scheme-powered project initializer.
-
-Expressive templates. Pure creation, so why stop at variables when your templates can think in Scheme?
-#+end_quote
-
 Empowering you with S-expressions in the (double delta delimited) templates. Actively looking for contributions and community templates.
 
 If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee ☕]] so I can continue with a lot of motivation.
@@ -136,6 +130,12 @@ Example Template Valg in Action, drop a new template folder with its own valg.sc
 
 
 --------------
+
+#+begin_quote
+Delightfully dynamic project scaffolding in the Scheme-powered project initializer.
+
+Expressive templates. Pure creation, so why stop at variables when your templates can think in Scheme?
+#+end_quote
 
 [[https://jointhefreeworld.org/static-assets/skapa/skapa-small.png]]
 
