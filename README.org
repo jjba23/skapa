@@ -6,7 +6,11 @@
 [[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]] [[https://jointhefreeworld.org/ggg/dist/maak.svg]]
 [[https://jointhefreeworld.org/ggg/dist/license-agpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]]
 
-Project scaffolding and templating tool. Looking for Quick-start your new projects with many of the ready templates. Actively looking for contributions and community templates.
+Project scaffolding and templating tool with the power of Lisp.  Quick-start your new projects with many of the ready templates.
+
+🚧 WORK IN PROGRESS!
+
+Empowering you with S-expressions in the (double delta delimited) templates. Actively looking for contributions and community templates.
 
 If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee ☕]] so I can continue with a lot of motivation.
 
@@ -31,17 +35,7 @@ Framework: ΔΔ framework ΔΔ
 
 -----------------
 
-Here are new Org-mode sections for the ~skapa~ README, designed to be placed between the introduction and the existing technical details, along with a revised contributing section that explicitly asks for community templates.
-
-You can copy and paste the blocks below into your existing ~README.org~.
-
----
-
-* Usage
-
-~skapa~ is designed to be interactive and simple to use.
-
- Launch the Wizard
+~skapa~ is designed to be interactive and simple to use and features a helpful wizard, with usage memory and sane defaults.
 
 Simply run the command to start the interactive scaffolding wizard:
 
