@@ -22,6 +22,7 @@ object UserRoutes:
 
   val routes: Routes[UserRepository, Response] =
     Routes(
+      // GET /users
       Method.GET / "users" -> handler {
         ZIO.serviceWithZIO[UserRepository] { repo =>
           for
@@ -31,6 +32,7 @@ object UserRoutes:
         }
       },
 
+      // GET /users/:id
       Method.GET / "users" / string("id") -> handler { (id: String, _: Request) =>
         ZIO.serviceWithZIO[UserRepository] { repo =>
           for
@@ -41,12 +43,24 @@ object UserRoutes:
           }
       },
 
+      // POST /users
       Method.POST / "users" -> handler { (_: Request) =>
         ZIO.serviceWithZIO[UserRepository] { repo =>
           for
             _ <- repo.save(User("123", "Alice", "alice@example.com"))
             _ <- ZIO.logInfo("Created user 123")
           yield Response.status(Status.Created)
+        }
+      },
+
+      // DELETE /users/:id
+      Method.DELETE / "users" / string("id") -> handler { (id: String, _: Request) =>
+        ZIO.serviceWithZIO[UserRepository] { repo =>
+          for
+            deleted <- repo.delete(id)
+            _       <- ZIO.logInfo(s"Delete user $id result: $deleted")
+          yield if deleted then Response.status(Status.NoContent)
+                else Response.status(Status.NotFound)
         }
       }
     )
