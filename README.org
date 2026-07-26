@@ -134,7 +134,7 @@ Example Template Valg in Action, drop a new template folder with its own valg.sc
 #+begin_quote
 Delightfully dynamic project scaffolding in the Scheme-powered project initializer.
 
-Expressive templates. Pure creation, so why stop at variables when your templates can think in Scheme?
+Expressive templates. Pure creation, so why stop at variables when your templates can think in Scheme and forge a new project from a tempate powerfully
 #+end_quote
 
 [[https://jointhefreeworld.org/static-assets/skapa/skapa-small.png]]
