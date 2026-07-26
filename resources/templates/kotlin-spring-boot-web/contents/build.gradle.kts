@@ -11,7 +11,7 @@ plugins {
     idea
 }
 
-group = "ΔΔgroup-nameΔΔ"
+group = "ΔΔ group-name ΔΔ"
 version = "0.1.0-SNAPSHOT"
 
 repositories {
