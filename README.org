@@ -13,7 +13,6 @@ Empowering you with S-expressions in the (double delta delimited) templates. Act
 If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee ☕]] so I can continue with a lot of motivation.
 
 
-
 -------------
 
 ** ~ΔΔ ... ΔΔ~ Expressions Inside Template Files

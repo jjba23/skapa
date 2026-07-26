@@ -2,4 +2,16 @@
 #+author: ΔΔ creator ΔΔ
 
 Welcome to ΔΔ project-name ΔΔ!
-ΔΔ crossroads-content ΔΔ
+#+begin_quote
+ΔΔ description ΔΔ
+#+end_quote
+
+
+** Getting Started
+
+ΔΔ (if include-guix "*** Development Environment\n\nThis project uses GNU Guix for reproducible development environments. Spawn the shell with:\n\n```sh\nguix shell\n```\n" "") ΔΔ
+
+
+#+begin_src sh
+ΔΔ project-name ΔΔ --help
+#+end_src
