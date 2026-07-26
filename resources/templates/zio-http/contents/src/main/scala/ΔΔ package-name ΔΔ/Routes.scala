@@ -15,7 +15,7 @@ object AppRoutes:
     )
 
   val routes: Routes[Any, Response] =
-    (rootRoutes ++ UserRoutes.routes) @@ correlationIdMiddleware
+    (rootRoutes ++ UserRoutes.routes)
 
 
 object UserRoutes:
