@@ -10,12 +10,12 @@
            (required? . #t)
            (type . string))
 
-                    ((key . package-name)
+          ((key . package-name)
            (prompt . "Project package name (Java convention, thisisasentence)")
            (required? . #t)
            (type . string))
 
-                              ((key . group-name)
+          ((key . group-name)
            (prompt . "Project group (Java convention, dotted package name)")
            (required? . #t)
            (type . string))
