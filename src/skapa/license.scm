@@ -20,9 +20,11 @@
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 textual-ports)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-13)
   #:use-module (skapa engine)
   #:export (list-available-licenses load-license-full-text load-license-header
-                                    copy-license-file load-license-context))
+                                    load-all-license-headers copy-license-file
+                                    load-license-context))
 
 (define (licenses-directory resources-dir)
   (format #f "~a/licenses" resources-dir))
@@ -58,20 +60,41 @@
         (read-file-if-exists license-path) "")))
 
 (define (load-license-header lic-id ext resources-dir)
-  "Loads the language-specific header comment block (e.g. header.scm or header.txt)."
+  "Loads a specific language header comment block (e.g. header.scm or header.txt)."
   (let* ((base (format #f "~a/licenses/~a" resources-dir lic-id))
          (ext-path (format #f "~a/header.~a" base ext))
          (gen-path (format #f "~a/header.txt" base)))
     (or (read-file-if-exists ext-path)
         (read-file-if-exists gen-path) "")))
 
+(define (load-all-license-headers lic-id resources-dir)
+  "Scans resources/licenses/<lic-id>/ for files matching 'header.<ext>'
+and returns an alist mapping 'license-header-<ext>' to their string contents."
+  (let* ((base (format #f "~a/licenses/~a" resources-dir lic-id))
+         (entries (and (file-exists? base)
+                       (scandir base
+                                (lambda (f)
+                                  (and (string-prefix? "header." f)
+                                       (not (string=? f "header."))
+                                       (eq? 'regular
+                                            (stat:type (stat (format #f
+                                                                     "~a/~a"
+                                                                     base f))))))))))
+    (if entries
+        (map (lambda (f)
+               (let* ((ext (substring f
+                                      (string-length "header.")))
+                      (path (format #f "~a/~a" base f))
+                      (content (or (read-file-if-exists path) "")))
+                 (cons (format #f "license-header-~a" ext) content))) entries)
+        '())))
+
 (define (load-license-context lic-id resources-dir)
-  "Generates an alist with both full license text and comment headers for context."
+  "Generates an alist with full license text and all dynamically discovered headers."
   (let ((full-text (load-license-full-text lic-id resources-dir))
-        (header-scm (load-license-header lic-id "scm" resources-dir)))
-    `(("license" unquote lic-id)
-      ("license-full" unquote full-text)
-      ("license-header-scm" unquote header-scm))))
+        (headers (load-all-license-headers lic-id resources-dir)))
+    (append `(("license" unquote lic-id)
+              ("license-full" unquote full-text)) headers)))
 
 (define (copy-license-file lic-id resources-dir dest-dir context-alist)
   "Copies and renders the full license text (COPYING or LICENSE) to dest-dir/COPYING."
