@@ -1,3 +1,5 @@
+<: license-header-scm :>
+
 (list (channel
         (name 'guix)
         (url "https://git.guix.gnu.org/guix.git")

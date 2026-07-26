@@ -1,3 +1,5 @@
+<: license-header-scm :>
+
 (use-modules (guix gexp)
              (guix packages)
              (guix git-download)

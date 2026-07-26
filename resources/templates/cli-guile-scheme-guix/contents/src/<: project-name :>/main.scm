@@ -1,3 +1,4 @@
+<: license-header-scm :>
 
 (define-module (<: project-name :> main)
   #:declarative? #t

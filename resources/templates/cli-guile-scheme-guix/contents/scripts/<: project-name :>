@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+<: license-header-bash :>
+
 # Commentary:
 #
 # This bash script provides a convenient and user-friendly wrapper

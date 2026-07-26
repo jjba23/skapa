@@ -30,7 +30,6 @@
 (define (run-wizard options)
   (let* ((resources (option-ref options
                                 'resources "resources"))
-
          (avail-templates (list-available-templates resources))
          (cli-template (option-ref options
                                    'template #f))
@@ -45,7 +44,9 @@
          (template-dir (format #f "~a/templates/~a" resources template-name))
          (contents-dir (format #f "~a/contents" template-dir))
          (_ (unless (file-exists? contents-dir)
-              (error (format #f "Template '~a' is missing a 'contents/' directory!" template-name))))
+              (error (format #f
+                      "Template '~a' is missing a 'contents/' directory!"
+                      template-name))))
          (valg-path (format #f "~a/valg.scm" template-dir))
          (valg (load-valg valg-path))
          (user-ctx (run-valg-prompts valg options))
@@ -53,11 +54,13 @@
          (cli-name (option-ref options
                                'name #f))
          (project-name (or cli-name
-                           (assq-ref user-ctx 'project-name)))
+                           (assq-ref user-ctx
+                                     'project-name)))
          (cli-creator (option-ref options
                                   'creator #f))
          (creator-name (or cli-creator
-                           (assq-ref user-ctx 'creator)))
+                           (assq-ref user-ctx
+                                     'creator)))
 
          (available-licenses (list-available-licenses resources))
          (cli-license (option-ref options
@@ -70,17 +73,30 @@
 
          (lic-ctx (load-license-context lic-id resources))
 
-         (final-ctx (append `(("project-name" unquote project-name)
-                              ("creator" unquote creator-name)
-                              ("year" . "2026")) user-ctx lic-ctx))
+         (base-ctx (append `(("project-name" unquote project-name)
+                             ("creator" unquote creator-name)
+                             ("year" . "2026")) user-ctx lic-ctx))
+
+         (final-ctx (map (lambda (pair)
+                           (if (and (string? (car pair))
+                                    (string-prefix? "license-header"
+                                                    (car pair)))
+                               (cons (car pair)
+                                     (render-template-string (cdr pair)
+                                                             base-ctx)) pair))
+                         base-ctx))
 
          (dest-dir (format #f "dist/~a" project-name)))
-
+    
     (format #t "
 Forging project '~a' using template '~a'...
 " project-name
             template-name)
+
     (render-template-directory contents-dir dest-dir final-ctx)
+
+    (copy-license-file lic-id resources dest-dir final-ctx)
+
     (format #t "[Success] Workspace created at: ~a\n" dest-dir)))
 
 (define option-spec
