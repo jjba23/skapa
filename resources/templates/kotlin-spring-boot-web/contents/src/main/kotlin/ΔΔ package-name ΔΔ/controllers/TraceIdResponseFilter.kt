@@ -1,6 +1,4 @@
-package ΔΔpackage
-
--nameΔΔ.controllers
+package ΔΔpackage-nameΔΔ.controllers
 
 import io.opentelemetry.api.trace.Span
 import jakarta.servlet.FilterChain
