@@ -131,6 +131,8 @@ Example Template Valg in Action, drop a new template folder with its own valg.sc
 
 --------------
 
+[[https://jointhefreeworld.org/static-assets/skapa/skapa-txt-small.png]]
+
 #+begin_quote
 Delightfully dynamic project scaffolding in the Scheme-powered project initializer.
 
