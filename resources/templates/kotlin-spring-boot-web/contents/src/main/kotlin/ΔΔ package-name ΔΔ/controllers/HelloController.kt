@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.http.HttpStatus
 
 @RestController
-class HelloController(
-    val sendgridClient: SdkSendgridClient,
-) : V1HelloController {
+class HelloController() : V1HelloController {
     private val logger = KotlinLogging.logger {}
 
     override fun hello(): ResponseEntity<String> {
