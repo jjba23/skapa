@@ -5,11 +5,18 @@ import zio.http.*
 object AppRoutes:
 
 
-  val loggingMiddleware = HandlerAspect.customizeResponse { response =>
-    response.header("X-Correlation-ID").fold(ZIO.unit) { id =>
-      ZIO.logAnnotate("correlation_id", id)
+  val correlationIdMiddleware: Middleware[Any] =
+    Middleware.custom { handler =>
+      Handler.fromFunctionZIO { (req: Request) =>
+        val cid = req.headers
+          .get("X-Correlation-ID")
+          .getOrElse(java.util.UUID.randomUUID().toString)
+
+        ZIO.logAnnotate("correlation_id", cid) {
+          handler.run(req)
+        }
+      }
     }
-  }
 
 
   val routes: Routes[Any, Response] =
@@ -19,4 +26,4 @@ object AppRoutes:
 
       Method.GET / "health" ->
         handler(Response.text("OK"))
-    ) @@ loggingMiddleware
+    ) @@ correlationIdMiddleware

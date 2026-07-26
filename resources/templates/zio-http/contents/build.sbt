@@ -1,9 +1,8 @@
 ThisBuild / scalaVersion := "3.7.3"
 
-object Versions:
-  val zio        = "2.1.26"
-  val zioLogging = "2.3.1"
-  val zioHttp    = "3.3.3"
+val zioVersion        = "2.1.26"
+val zioLoggingVersion = "2.5.3"
+val zioHttpVersion    = "3.3.3"
 
 lazy val root = project
   .in(file("."))
@@ -15,20 +14,17 @@ lazy val root = project
     evictionErrorLevel := Level.Error,
 
     libraryDependencies ++= Seq(
-      "dev.zio" %% "zio"              % Versions.zio,
-      "dev.zio" %% "zio-http"         % Versions.zioHttp,
-      "dev.zio" %% "zio-logging"      % Versions.zioLogging,
-      "dev.zio" %% "zio-logging-json" % Versions.zioLogging,
+      "dev.zio" %% "zio"              % zioVersion,
+      "dev.zio" %% "zio-http"         % zioHttpVersion,
+      "dev.zio" %% "zio-logging"      % zioLoggingVersion,
 
-      "dev.zio" %% "zio-test"     % Versions.zio % Test,
-      "dev.zio" %% "zio-test-sbt" % Versions.zio % Test
+      "dev.zio" %% "zio-test"     % zioVersion % Test,
+      "dev.zio" %% "zio-test-sbt" % zioVersion % Test
     ),
 
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
 
     scalacOptions ++= Seq(
-      // General Settings
-      "-release:25",           // Target JDK 21 bytecode
       "-encoding", "utf-8",    // Specify character encoding
       "-feature",              // Warn about misused language features
       "-deprecation",          // Warn about deprecated APIs

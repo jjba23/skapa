@@ -2,7 +2,6 @@ package ΔΔpackage-nameΔΔ
 
 import zio.*
 import zio.logging.*
-import zio.logging.json.*
 
 object Main extends ZIOAppDefault:
 
@@ -20,7 +19,7 @@ object Main extends ZIOAppDefault:
     for
       _ <- ZIO.logInfo("Server starting up...")
 
-      // Example: Add scoped context (MDC style) for a block of ZIO effects
+      // Example: Add scoped context (MDC style)
       // _ <- ZIO.logAnnotate("correlation_id", "req-123456") {
       //        for
       //          _ <- ZIO.logAnnotate("user_id", "usr-8899") {
