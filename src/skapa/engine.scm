@@ -53,20 +53,32 @@
                       (module-define! m sym val))))) context-alist) m))
 
 (define (eval-rune-token token-str context-module)
-  "Parses and evaluates an embedded Scheme expression string."
+  "Parses and evaluates all embedded Scheme expressions in token-str."
   (catch #t
          (lambda ()
-           (let* ((expr (with-input-from-string token-str read))
-                  (res (eval expr context-module)))
+           (let* ((port (open-input-string token-str))
+                  ;; Read all expressions until EOF
+                  (exprs (let loop
+                           ((acc '()))
+                           (let ((datum (read port)))
+                             (if (eof-object? datum)
+                                 (reverse acc)
+                                 (loop (cons datum acc)))))))
              (cond
-               ((boolean? res)
-                (if res "true" "false"))
-               ((or (null? res)
-                    (not res))
+               ;; Handle empty tags (e.g. ΔΔΔΔ or ΔΔ  ΔΔ) gracefully
+               ((null? exprs)
                 "")
-               (else (format #f "~a" res)))))
+               (else (let ((res (eval `(begin
+                                         ,@exprs) context-module)))
+                       (cond
+                         ((boolean? res)
+                          (if res "true" "false"))
+                         ((or (null? res)
+                              (not res))
+                          "")
+                         (else (format #f "~a" res))))))))
          (lambda (key . args)
-           (format #f "[[Template Error (~a): ~a]]" key token-str))))
+           (format #f "[[Template Error (~a): ~a: ~a]]" key token-str args))))
 
 (define (render-template-string template-str context-alist)
   "Replaces all ΔΔ scheme-expression ΔΔ tags with evaluated results."
