@@ -3,4 +3,8 @@
  (prompts ((key . project-name)
            (prompt . "Project name (Lisp convention, kebab-case)")
            (required? . #t)
+           (type . string))
+          ((key . package-name)
+           (prompt . "Package name (Java convention, thisisapackage)")
+           (required? . #t)
            (type . string))))

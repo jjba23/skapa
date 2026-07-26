@@ -1,4 +1,4 @@
-package example
+package ΔΔpackage-nameΔΔ
 
 import zio.*
 

@@ -1,4 +1,4 @@
-package example
+package ΔΔpackage-nameΔΔ
 
 import zio.test.*
 import zio.http.*
@@ -10,7 +10,7 @@ object RoutesSpec extends ZIOSpecDefault:
       test("GET / returns Hello, world!") {
 
         for {
-          response <- Routes.app.runZIO(
+          response <- AppRoutes.routes.runZIO(
             Request.get(URL.decode("/").toOption.get)
           )
           body <- response.body.asString

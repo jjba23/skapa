@@ -1,10 +1,10 @@
-package example
+package ΔΔpackage-nameΔΔ
 
 import zio.http.*
 
-object Routes:
+object AppRoutes:
 
-  val app: Routes[Any, Response] =
+  val routes: Routes[Any, Response] =
     Routes(
       Method.GET / Root ->
         handler(Response.text("Hello, world!")),
