@@ -1,4 +1,4 @@
-package mailgateway
+package ΔΔpackage-nameΔΔ
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withData

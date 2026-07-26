@@ -1,4 +1,4 @@
-package mailgateway
+package ΔΔpackage-nameΔΔ
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.assertions.throwables.shouldNotThrowAny

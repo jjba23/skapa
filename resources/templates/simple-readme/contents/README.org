@@ -1,5 +1,5 @@
-#+title: <: project-name :>
-#+author: <: creator :>
+#+title: ΔΔ project-name ΔΔ
+#+author: ΔΔ creator ΔΔ
 
-Welcome to <: project-name :>!
-<: crossroads-content :>
+Welcome to ΔΔ project-name ΔΔ!
+ΔΔ crossroads-content ΔΔ

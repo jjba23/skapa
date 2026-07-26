@@ -1,4 +1,4 @@
-<: license-header-scm :>
+ΔΔ license-header-scm ΔΔ
 
 (use-modules (guix gexp)
              (guix packages)
@@ -18,9 +18,9 @@
 (define %source-dir
   (dirname (current-filename)))
 
-(define-public <: project-name :>
+(define-public ΔΔ project-name ΔΔ
   (package
-    (name "<: project-name :>")
+    (name "ΔΔ project-name ΔΔ")
     (version "dev")
     (source
      (local-file %source-dir
@@ -41,13 +41,13 @@
                     (share (string-append #$output "/share")))
                 (install-file "resources/help.txt"
                               (string-append share "/resources/"))
-                (install-file "scripts/<: project-name :>" bin)
-                (chmod (string-append bin "/<: project-name :>") #o755))))
+                (install-file "scripts/ΔΔ project-name ΔΔ" bin)
+                (chmod (string-append bin "/ΔΔ project-name ΔΔ") #o755))))
           (add-after 'unpack 'fix-paths
             (lambda* (#:key inputs #:allow-other-keys)
               (for-each (match-lambda
                           ((pattern program format-string)
-                           (substitute* "scripts/<: project-name :>"
+                           (substitute* "scripts/ΔΔ project-name ΔΔ"
                              ((pattern)
                               (format #f format-string
                                       (search-input-file inputs
@@ -63,7 +63,7 @@
      "")
     (description
      "")
-    (home-page "https://codeberg.org/jjba23/<: project-name :>")
+    (home-page "https://codeberg.org/jjba23/ΔΔ project-name ΔΔ")
     (license license:agpl3+)))
 
-<: project-name :>
+ΔΔ project-name ΔΔ

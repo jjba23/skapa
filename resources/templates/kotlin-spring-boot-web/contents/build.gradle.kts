@@ -11,7 +11,7 @@ plugins {
     idea
 }
 
-group = "nl.vandebron"
+group = "ΔΔgroup-nameΔΔ"
 version = "0.1.0-SNAPSHOT"
 
 repositories {
@@ -31,7 +31,7 @@ kotlin {
 }
 
 fabrikt {
-    generate("<: project-name :>") {
+    generate("ΔΔ project-name ΔΔ") {
         apiFile = file("src/main/resources/static/openapi.yaml")
         basePackage = "mailgateway.openapi"
         model {

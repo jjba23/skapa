@@ -1,4 +1,4 @@
-<: license-header-scm :>
+ΔΔ license-header-scm ΔΔ
 
 (use-modules (guix packages)
              (gnu)

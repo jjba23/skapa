@@ -1,4 +1,4 @@
-#+title: <: project-name :>
+#+title: ΔΔ project-name ΔΔ
 #+author: Josep Bigorra
 #+email: jjbigorra@gmail.com
 #+language: en

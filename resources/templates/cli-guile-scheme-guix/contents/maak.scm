@@ -1,4 +1,4 @@
-<: license-header-scm :>
+ΔΔ license-header-scm ΔΔ
 
 (define-module (maak)
   #:use-module (maak maak)
@@ -17,7 +17,7 @@
   "https://jointhefreeworld.org/static/css/jointhefreeworld.css")
 
 (define project-name
-  '<: project-name :>)
+  'ΔΔ project-name ΔΔ)
 
 (define hot-reload-file-types
   '(scm))
@@ -33,7 +33,7 @@
 
 (define (help)
   "Display program help screen."
-  (time-machine-program-shell '("<: project-name :> --help")))
+  (time-machine-program-shell '("ΔΔ project-name ΔΔ --help")))
 
 (define (default)
   "Default task to run, call program's help."
@@ -62,7 +62,7 @@
 (define (package-docker)
   "Create a Docker image for Iter Vitae."
   (time-machine-manifest-shell '("guix pack --file=./guix.scm"
-                                 "--format=docker" "--image-tag=<: project-name :>"
+                                 "--format=docker" "--image-tag=ΔΔ project-name ΔΔ"
                                  "-S /bin=bin"
                                  "bash coreutils util-linux-with-udev guile")))
 
@@ -82,12 +82,12 @@
 
 (define (dev-run)
   (time-machine-manifest-shell (list
-                                "guile -L ./src -c '((@(<: project-name :> main) main))'"
+                                "guile -L ./src -c '((@(ΔΔ project-name ΔΔ main) main))'"
                                 "--resources ./resources")
                                #:verbose? #t))
 
 (define (run)
-  (time-machine-program-shell (list "<: project-name :>")))
+  (time-machine-program-shell (list "ΔΔ project-name ΔΔ")))
 
 (define (hot-reload)
   "Hot-reloading developer's setup."

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-<: license-header-bash :>
+ΔΔ license-header-bash ΔΔ
 
 # Commentary:
 #
 # This bash script provides a convenient and user-friendly wrapper
-# around the command-line usage of `<: project-name :>`, allowing the
+# around the command-line usage of `ΔΔ project-name ΔΔ`, allowing the
 # Guile Scheme application to behave and feel like any other
 # executable or binary that users may install to their systems.
 #
-# This also helps installing `<: project-name :>` in a convenient fashion
+# This also helps installing `ΔΔ project-name ΔΔ` in a convenient fashion
 # to the Guix store and it allows us to decouple the user-facing
 # command-line interface from the internal Guile Scheme arguments
 # to the main program and library.
@@ -52,7 +52,7 @@ show_help() {
   cat "${resources_dir}/help.txt"
 }
 
-parsed_options=$(getopt -n "<: project-name :>" -o r:h \
+parsed_options=$(getopt -n "ΔΔ project-name ΔΔ" -o r:h \
   --long resources:,help -- "$@")
 
 eval set -- "${parsed_options}"
@@ -61,7 +61,7 @@ resources_arg="${resources_dir}"
 
 guile_cmd_args=(
   "-L" "${scheme_sources_dir}"
-  "-c" "((@(<: project-name :> main) main))"
+  "-c" "((@(ΔΔ project-name ΔΔ main) main))"
 )
 
 while true; do
@@ -93,7 +93,7 @@ done
 guile_cmd_args+=("--resources" "${resources_arg}")
 
 log_info "-------------------------------------------------"
-log_info "Starting <: project-name :>: guile ${guile_cmd_args[*]}"
+log_info "Starting ΔΔ project-name ΔΔ: guile ${guile_cmd_args[*]}"
 
 # Run Guile application
 exec guile "${guile_cmd_args[@]}"

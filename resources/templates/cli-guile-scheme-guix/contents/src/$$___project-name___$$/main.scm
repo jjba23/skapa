@@ -1,6 +1,6 @@
-<: license-header-scm :>
+ΔΔlicense-header-scmΔΔ
 
-(define-module (<: project-name :> main)
+(define-module (ΔΔproject-nameΔΔ main)
   #:declarative? #t
   #:use-module (ice-9 getopt-long)
   #:export (main))
@@ -17,4 +17,4 @@
          (options (getopt-long args option-spec))
          (resources (option-ref options
                                 'resources #f)))
-    (display "<: project-name :>")))
+    (display "ΔΔ project-name ΔΔ")))

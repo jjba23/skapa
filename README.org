@@ -6,11 +6,30 @@
 [[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]] [[https://jointhefreeworld.org/ggg/dist/maak.svg]]
 [[https://jointhefreeworld.org/ggg/dist/license-agpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]]
 
-Project scaffolding and templating tool. Quick-start your new projects with many of the ready templates.
+Project scaffolding and templating tool. Looking for Quick-start your new projects with many of the ready templates. Actively looking for contributions and community templates.
 
 If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee ☕]] so I can continue with a lot of motivation.
 
 -------------
+
+** ~ΔΔ ... ΔΔ~ Expressions Inside Template Files
+
+The use of the double greek capital letter delta is for maximum expressiveness, *visibility*, and to avoid any potential conflict with other templating languages.
+
+In any file (e.g., README.md or config.json):
+
+#+begin_src markdown
+# ΔΔ project-name ΔΔ
+
+Framework: ΔΔ framework ΔΔ
+
+ΔΔ (if include-db "## Database Setup\nConfigured for PostgreSQL." "## Database\nNo database selected.") ΔΔ
+
+## License
+ΔΔ license-body ΔΔ
+#+end_src
+
+-----------------
 
 Example Template Valg in Action, drop a new template folder with its own valg.scm:
 
@@ -33,20 +52,6 @@ Example Template Valg in Action, drop a new template folder with its own valg.sc
                (prompt . "Include PostgreSQL configuration?")
                (type . boolean)
                (default . #t)))))
-#+end_src
-
-~<: ... :>~ Expressions Inside Template Files
-In any file (e.g., README.md or config.json):
-
-#+begin_src markdown
-# <: project-name :>
-
-Framework: <: framework :>
-
-<: (if include-db "## Database Setup\nConfigured for PostgreSQL." "## Database\nNo database selected.") :>
-
-## License
-<: license-body :>
 #+end_src
 
 

@@ -1,4 +1,4 @@
-package mailgateway
+package ΔΔpackage-nameΔΔ
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan

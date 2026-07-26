@@ -69,16 +69,16 @@
            (format #f "[[Template Error (~a): ~a]]" key token-str))))
 
 (define (render-template-string template-str context-alist)
-  "Replaces all <: scheme-expression :> tags with evaluated results."
+  "Replaces all ΔΔ scheme-expression ΔΔ tags with evaluated results."
   (let ((eval-env (make-context-module context-alist)))
     (let loop
       ((offset 0)
        (acc ""))
-      (let ((start (string-contains template-str "<:" offset)))
+      (let ((start (string-contains template-str "ΔΔ" offset)))
         (if (not start)
             (string-append acc
                            (substring template-str offset))
-            (let ((end (string-contains template-str ":>"
+            (let ((end (string-contains template-str "ΔΔ"
                                         (+ start 2))))
               (if (not end)
                   (string-append acc

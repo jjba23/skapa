@@ -1,12 +1,8 @@
 ---
-application:
-  sendgrid:
-    api-key: "your-api-key"
-
 # --- Spring configuration ---
 spring:
   application:
-    name: <: project-name :>
+    name: ΔΔ project-name ΔΔ
   main:
     banner-mode: off
   threads:

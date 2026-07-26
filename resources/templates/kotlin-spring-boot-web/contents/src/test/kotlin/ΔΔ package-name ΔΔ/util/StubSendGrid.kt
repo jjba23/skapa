@@ -1,4 +1,4 @@
-package mailgateway.util
+package ΔΔpackage-nameΔΔ.util
 
 import com.sendgrid.Request
 import com.sendgrid.Response
