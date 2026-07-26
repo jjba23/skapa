@@ -68,9 +68,7 @@ skapa --template web-app --output my-new-app --project-name "My Awesome App"
 
 * How It Works
 
-~skapa~ is written entirely in [[[https://www.gnu.org/software/guile/](https://www.gnu.org/software/guile/)][GNU Guile Scheme]]. It processes project templates using a powerful combining of flat-file copying and expressive Scheme evaluation.
-
- The Template Structure
+~skapa~ is written entirely in [[https://www.gnu.org/software/guile][GNU Guile Scheme]]. It processes project templates using a powerful combining of flat-file copying and expressive Scheme evaluation.
 
 Templates reside in the ~resources/templates/~ directory of the distribution (or your local Guix profile data directory). A ~skapa~ template consists of:
 
@@ -86,7 +84,7 @@ Files inside the ~contents/~ directory can contain *$\Delta\Delta$ Expressions*.
 
 See [[file:resources/templates/][the ./resources/templates directory]] for more information about all the existing templates.
 
-We have, among others, Kotlin Spring Boot, ZIO HTTP, Guile Scheme CLI.
+We have, among others simple READMEs, Kotlin Spring Boot, ZIO HTTP, Guile Scheme CLI.
 
 
 * Community Templates
