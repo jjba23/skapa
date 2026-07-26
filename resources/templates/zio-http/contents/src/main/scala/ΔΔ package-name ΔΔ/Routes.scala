@@ -14,7 +14,7 @@ object AppRoutes:
       }
     )
 
-  val routes: Routes[Any, Response] =
+  val routes: Routes[UserRepository, Response] =
     (rootRoutes ++ UserRoutes.routes)
 
 
@@ -27,7 +27,7 @@ object UserRoutes:
           for
             users <- repo.findAll
             _     <- ZIO.logInfo(s"Fetched ${users.length} users")
-          yield Response.json(users.toString) // Replace with json encoding as needed
+          yield Response.json(users.toString)
         }
       },
 
@@ -41,7 +41,7 @@ object UserRoutes:
           }
       },
 
-      Method.POST / "users" -> handler { (req: Request) =>
+      Method.POST / "users" -> handler { (_: Request) =>
         ZIO.serviceWithZIO[UserRepository] { repo =>
           for
             _ <- repo.save(User("123", "Alice", "alice@example.com"))
