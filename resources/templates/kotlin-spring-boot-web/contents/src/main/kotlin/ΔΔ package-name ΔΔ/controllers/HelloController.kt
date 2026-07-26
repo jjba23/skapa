@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus
 class HelloController() : V1HelloController {
     private val logger = KotlinLogging.logger {}
 
-    override fun hello(): ResponseEntity<String> {
+    override fun getHelloWorld(): ResponseEntity<String> {
         return ResponseEntity.status(HttpStatus.OK).body("HELLO WORLD!")
     }
 }
