@@ -82,6 +82,12 @@ Files inside the ~contents/~ directory can contain *$\Delta\Delta$ Expressions*.
 
 -------
 
+* Existing templates
+
+See [[file:resources/templates/][the ./resources/templates directory]] for more information about all the existing templates.
+
+We have, among others, Kotlin Spring Boot, ZIO HTTP, Guile Scheme CLI.
+
 
 * Community Templates
 
