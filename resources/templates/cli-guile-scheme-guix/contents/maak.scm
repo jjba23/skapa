@@ -1,3 +1,5 @@
+<: license-header-scm :>
+
 (define-module (maak)
   #:use-module (maak maak)
   #:use-module (ice-9 textual-ports)
