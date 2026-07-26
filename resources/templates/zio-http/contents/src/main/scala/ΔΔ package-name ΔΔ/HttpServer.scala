@@ -1,7 +1,7 @@
 package ΔΔpackage-nameΔΔ
 
-import zio.*
-import zio.http.*
+import zio._
+import zio.http._
 
 object HttpServer:
 

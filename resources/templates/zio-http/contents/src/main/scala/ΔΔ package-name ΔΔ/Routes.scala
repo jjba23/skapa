@@ -1,29 +1,26 @@
 package ΔΔpackage-nameΔΔ
 
-import zio.http.*
+import zio._
+import zio.http._
 
 object AppRoutes:
 
-
+  // Idiomatic ZIO HTTP 3.x correlation ID middleware
   val correlationIdMiddleware: Middleware[Any] =
-    Middleware.custom { handler =>
-      Handler.fromFunctionZIO { (req: Request) =>
-        val cid = req.headers
-          .get("X-Correlation-ID")
-          .getOrElse(java.util.UUID.randomUUID().toString)
+    Middleware.logAnnotate { req =>
+      val cid = req.headers
+        .get("X-Correlation-ID")
+        .getOrElse(java.util.UUID.randomUUID().toString)
 
-        ZIO.logAnnotate("correlation_id", cid) {
-          handler.run(req)
-        }
-      }
+      Set(LogAnnotation("correlation_id", cid))
     }
-
 
   val routes: Routes[Any, Response] =
     Routes(
-      Method.GET / Root ->
-        handler(Response.text("Hello, world!")),
-
-      Method.GET / "health" ->
-        handler(Response.text("OK"))
+      Method.GET / "health" -> handler(Response.text("OK")),
+      Method.GET / "hello"  -> handler {
+        for
+          _ <- ZIO.logInfo("Handling hello endpoint")
+        yield Response.text("Hello World!")
+      }
     ) @@ correlationIdMiddleware
