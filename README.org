@@ -137,6 +137,79 @@ Expressive templates. Pure creation, so why stop at variables when your template
 
 [[https://jointhefreeworld.org/static-assets/skapa/skapa-small.png]]
 
+--------
+
+* Installing
+
+/Feel free to use it as you wish, within the terms of the GNU General Public License v3 or newer./
+
+** On Guix
+
+Requirements:
+- *Guix*: The Guix package manager will ensure a reproducible working software, and will manage all needed dependencies for you.
+-  *Guile Scheme:*  This entire program is written using the official GNU extension language, Guile Scheme.
+
+If you just want to quickly install it to your profile:
+
+#+begin_src shell
+guix package --install-from-file=./guix.scm
+#+end_src
+
+For example, to enter an environment shell with skapa temporarily you can use:
+#+begin_src shell
+guix time-machine --channels=channels.scm -- shell -f guix.scm
+#+end_src
+
+You can also chain commands to it:
+
+#+begin_src shell
+guix time-machine --channels=channels.scm -- \
+     shell -f guix.scm -- \
+     skapa --help
+#+end_src
+
+You can also run a dev shell (with manifest)
+#+begin_src shell
+guix time-machine --channels=channels.scm -- \
+     shell -m manifest.scm -- guile -L ./src -c \
+     '((@(skapa main) main))' --list
+#+end_src
+
+Skapa is available in upstream Guix as ~skapa~ in the module ~(gnu packages build-tools)~
+
+** [TODO] On Podman/Docker
+
+Skapa is also available as a Docker container, from DockerHub (also compatible with Podman).
+
+https://hub.docker.com/repository/docker/jjba23/skapa/general
+
+You can also build images of skapa yourself, using ~guix pack~. See the ~maak.scm~ file for more.
+To load these tarball images, you can do ~podman load < my.tar.gz~
+
+Then you can run Skapa from the container, and bind your local filesystem to give access, for example:
+
+#+begin_src shell
+ docker container run -v /home/joe:/home/joe \
+     docker.io/jjba23/skapa:latest \
+     skapa -f /home/joe/hacking/skapa/skapa.scm --list
+#+end_src
+
+** On Nix
+
+~skapa~ also is packaged via Nix.
+
+#+begin_src shell
+# Building via legacy Nix
+nix-build default.nix
+
+# Testing the result
+./result/bin/skapa --help
+
+# Building via Nix Flakes
+nix build
+./result/bin/skapa --list
+#+end_src
+
 --------------
 
 
@@ -174,6 +247,25 @@ In summary, we foster an inclusive, respectful, and cooperative environment for 
 
 ---------
 
+* Automation with Maak 🛠️
+
+This project uses [[https://codeberg.org/jjba23/maak][Maak]] for build automation, developer tooling, and task orchestration.
+
+#+begin_quote
+Most build systems invent their own limited, arcane domain-specific language (DSL). *Maak* embraces the full power of *λ Lisp* (GNU Guile Scheme), providing an infinitely extensible control plane where every task is a first-class Scheme function.
+#+end_quote
+
+[[https://jointhefreeworld.org/ggg/dist/maak.svg]]
+
+** Why Maak?
+
+- *Power of Lisp λ*: Define tasks, build steps, data pipelines, or complex macros using real Lisp (Guile Scheme) without so much copy-pasting, no weird =.PHONY= rules, and no restrictive YAML syntax.
+- *Transparent Execution*: Built-in helpers like =$=, =log-info=, and =parameterize= make running shell commands and dry-runs clean and predictable.
+- *Guix & Nix Integration*: Native support for reproducible development environments via =manifest-shell=, =program-shell=, and time-machine integration.
+
+Project automation logic lives inside =./maak.scm=. Feel free to inspect, extend, or hack on it!
+
+Learn more about Maak and how to use it and install it on your system at [[https://codeberg.org/jjba23/maak][Codeberg: jjba23/maak]].
 
 * On Reproducibility, and Why GNU Guix? 🐂️
 
@@ -204,3 +296,5 @@ Far from rigid, absolute reproducibility empowers fearless experimentation:
 cd ../../ && maak run && cd  dist/kkk && chmod +x gradlew && just test
 cd ../../ && maak run && cd  dist/kkk && chmod +x gradlew && just run
 #+end_src
+
+------------------
