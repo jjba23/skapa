@@ -11,7 +11,7 @@
 
 stdenv.mkDerivation {
   pname = "skapa";
-  version = "0.1.0-dev";
+  version = "0.0.3";
 
   src = ./.;
 
