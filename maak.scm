@@ -17,9 +17,6 @@
 
 (define-module (maak)
   #:declarative? #t
-  #:use-module (ice-9 string-fun)
-  #:use-module (ice-9 textual-ports)
-  #:use-module (ice-9 popen)
   #:use-module (maak maak)
   ;; The container helpers are imported under a prefix because the
   ;; tasks below are named the way maak exposes them on the command
@@ -43,40 +40,43 @@
 (define hot-reload-file-types
   '(scm))
 
-;; ====== Skapa abstractions ======
-
-(define (syscall-with-output cmd)
-  (let* ((process (open-input-pipe cmd))
-         (process-output (get-string-all process)))
-    (close-pipe process) process-output))
-
 ;; ====== Skapa file tasks ======
 
 (define (help)
   "Display program help screen."
-  (program-shell '("skapa --help")))
+  (program-shell (list "skapa" "--help")))
 
 (define (default)
   "Default task to run, call program's help."
   (list-tasks))
 
+;; The task named `run' below is the name maak exposes on the command line, so
+;; it shadows the builtin of the same name inside this file; the shell helper is
+;; therefore reached through the module it comes from.
 (define (fmt)
   "Format Scheme source code files according to the Guix style guide."
-  ($ '("find . -maxdepth 8 -name '*.scm'" "-type f -exec guix style -f {} \\;")
-     #:verbose? #t))
+  ((@ (maak maak) run)
+   (list "find" "." "-maxdepth" "8" "-name" "*.scm" "-type" "f"
+         "-exec" "guix" "style" "-f" "{}" ";")
+   #:verbose? #t))
 
 (define (repl)
   "Development REPL."
-  (time-machine-manifest-shell '("guile -L ./src"
-                                 "-c '((@ (ares server) run-nrepl-server))'")))
+  (time-machine-manifest-shell (list "guile" "-L" "./src"
+                                     "-c" "'((@ (ares server) run-nrepl-server))'")))
 
+;; A manifest shell joins the parts it is handed into one shell line, so each
+;; argument is a part of its own and each command is a call of its own: a `&&'
+;; would be one word inside a part, and a failure would be reported by the line
+;; rather than by the step that failed.
 (define (docs)
   "Generate technical API documentation for Skapa."
   (delete-file-recursively "doc")
-  (time-machine-manifest-shell (list "documenta api ./src/skapa && "
-                                     (~
-                                      "texi2any -v --html --css-ref=~a -o index_html"
-                                      api-docs-css-url) "./doc/api/index.texi"))
+  (time-machine-manifest-shell (list "documenta" "api" "./src/skapa"))
+  (time-machine-manifest-shell (list "texi2any" "-v" "--html"
+                                     (~ "--css-ref=~a" api-docs-css-url)
+                                     "-o" "index_html"
+                                     "./doc/api/index.texi"))
   (mv "./index_html" "./doc/api-dist"))
 
 (define (deploy)
@@ -84,32 +84,44 @@
   (docs)
   (remkdir-p (~ "~a/api-docs/skapa" deploy-dir))
   (mv "doc/api-dist/*"
-      (~ "~a/api-docs/skapa" deploy-dir))
+      (~ "~a/api-docs/skapa" deploy-dir)
+      #:expand? #t)
   (delete-file-recursively "doc"))
 
 (define (package-docker)
-  "Create a Docker image for Skapa."
-  ($ '("guix pack --file=./guix.scm" "--format=docker" "--image-tag=skapa"
-       "-S /bin=bin" "bash coreutils util-linux-with-udev guile")))
+  "Pack Skapa as a Docker image with `guix pack'."
+  (guix-pack '()
+             #:file "./guix.scm"
+             #:format "docker"
+             #:image-tag (~ "~a" project-name)
+             #:symlinks '("/bin=bin")
+             #:extra-packages '("bash" "coreutils" "util-linux-with-udev" "guile")
+             #:verbose? #t))
 
 (define (push-docker-latest)
   "Push the latest locally generated Docker image to Dockerhub."
-  ($ (list (~ "podman push localhost/~a:latest" project-name)
-           (~ "docker.io/jjba23/~a:latest" project-name))
-     #:verbose? #t))
+  (ct:container (list "push"
+                      (~ "localhost/~a:latest" project-name)
+                      (~ "docker.io/jjba23/~a:latest" project-name))
+                #:verbose? #t))
 
 (define (push-docker-tag)
   "Push the locally generated Docker image to Dockerhub."
   (git-fetch "--all")
-  (let* ((latest-tag (syscall-with-output "git describe --tags --abbrev=0")))
-    ($ (list (~ "podman push localhost/~a:latest" project-name)
-             (~ "docker.io/jjba23/~a:~a" project-name latest-tag))
-       #:verbose? #t)))
+  ;; `git describe' answers the empty string under `--dry-run', since nothing is
+  ;; run: the dry run then prints the tag it cannot know yet rather than a
+  ;; command with a hole in it.
+  (let* ((latest-tag (git-describe-tag))
+         (tag (if (string=? latest-tag "") "<latest-tag>" latest-tag)))
+    (ct:container (list "push"
+                        (~ "localhost/~a:latest" project-name)
+                        (~ "docker.io/jjba23/~a:~a" project-name tag))
+                  #:verbose? #t)))
 
 (define (dev-run)
-  (time-machine-manifest-shell (list
-                                "guile -L ./src -c '((@(skapa main) main))'"
-                                "--resources ./resources")
+  (time-machine-manifest-shell (list "guile" "-L" "./src"
+                                     "-c" "'((@(skapa main) main))'"
+                                     "--resources" "./resources")
                                #:verbose? #t))
 
 (define (run)

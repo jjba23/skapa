@@ -2,8 +2,6 @@
 
 (define-module (maak)
   #:use-module (maak maak)
-  #:use-module (ice-9 textual-ports)
-  #:use-module (ice-9 popen)
   #:declarative? #t)
 
 ;; ====== Maak constants ======
@@ -22,68 +20,79 @@
 (define hot-reload-file-types
   '(scm))
 
-;; ====== Maak abstractions ======
-
-(define (syscall-with-output cmd)
-  (let* ((process (open-input-pipe cmd))
-         (process-output (get-string-all process)))
-    (close-pipe process) process-output))
-
 ;; ====== Maak tasks ======
 
 (define (help)
   "Display program help screen."
-  (time-machine-program-shell '("ΔΔ project-name ΔΔ --help")))
+  (time-machine-program-shell (list "ΔΔ project-name ΔΔ" "--help")))
 
 (define (default)
   "Default task to run, call program's help."
   (list-tasks))
 
+;; The task named `run' below is the name maak exposes on the command line, so
+;; it shadows the builtin of the same name inside this file; the shell helper is
+;; therefore reached through the module it comes from.
 (define (fmt)
   "Format Scheme source code files according to the Guix style guide."
-  ($ '("find . -maxdepth 8 -name '*.scm'" "-type f -exec guix style -f {} \\;")
-     #:verbose? #t))
+  ((@ (maak maak) run)
+   (list "find" "." "-maxdepth" "8" "-name" "*.scm" "-type" "f"
+         "-exec" "guix" "style" "-f" "{}" ";")
+   #:verbose? #t))
 
 (define (repl)
   "Development REPL."
-  (manifest-shell '("guile -L ./src"
-                    "-c '((@ (ares server) run-nrepl-server))'")))
+  (manifest-shell (list "guile" "-L" "./src"
+                        "-c" "'((@ (ares server) run-nrepl-server))'")))
 
+;; A manifest shell joins the parts it is handed into one shell line, so each
+;; argument is a part of its own and each command is a call of its own: a `&&'
+;; would be one word inside a part, and a failure would be reported by the line
+;; rather than by the step that failed.
 (define (docs)
-  "Generate technical API documentation for Maak."
+  "Generate technical API documentation for the project."
   (delete-file-recursively "doc")
-  (time-machine-manifest-shell (list (~ "documenta api ./src/~a && "
-                                        project-name)
-                                     (~ "texi2any -v --html --css-ref=~a"
-                                        api-docs-css-url)
+  (time-machine-manifest-shell (list "documenta" "api"
+                                     (~ "./src/~a" project-name)))
+  (time-machine-manifest-shell (list "texi2any" "-v" "--html"
+                                     (~ "--css-ref=~a" api-docs-css-url)
                                      "./doc/api/index.texi"))
   (mv "./index" "./doc/api-dist"))
 
 (define (package-docker)
-  "Create a Docker image for Iter Vitae."
-  (time-machine-manifest-shell '("guix pack --file=./guix.scm"
-                                 "--format=docker" "--image-tag=ΔΔ project-name ΔΔ"
-                                 "-S /bin=bin"
-                                 "bash coreutils util-linux-with-udev guile")))
+  "Build the project's container image."
+  ;; `guix-pack' would run the ambient Guix; the generated project builds its
+  ;; image at the revision channels.scm pins, inside the manifest shell.
+  (time-machine-manifest-shell
+   (list "guix" "pack" "--file=./guix.scm" "--format=docker"
+         "--image-tag=ΔΔ project-name ΔΔ" "-S" "/bin=bin"
+         "bash" "coreutils" "util-linux-with-udev" "guile")
+   #:verbose? #t))
 
 (define (push-docker-latest)
   "Push the latest locally generated Docker image to Dockerhub."
-  ($ (list (~ "podman push localhost/~a:latest" project-name)
-           (~ "docker.io/jjba23/~a:latest" project-name))
-     #:verbose? #t))
+  (container (list "push"
+                   (~ "localhost/~a:latest" project-name)
+                   (~ "docker.io/jjba23/~a:latest" project-name))
+             #:verbose? #t))
 
 (define (push-docker-tag)
   "Push the locally generated Docker image to Dockerhub."
-  ($ '("git fetch --all"))
-  (let* ((latest-tag (syscall-with-output "git describe --tags --abbrev=0")))
-    ($ (list (~ "podman push localhost/~a:latest" project-name)
-             (~ "docker.io/jjba23/~a:~a" project-name latest-tag))
-       #:verbose? #t)))
+  (git-fetch "--all")
+  ;; `git describe' answers the empty string under `--dry-run', since nothing is
+  ;; run: the dry run then prints the tag it cannot know yet rather than a
+  ;; command with a hole in it.
+  (let* ((latest-tag (git-describe-tag))
+         (tag (if (string=? latest-tag "") "<latest-tag>" latest-tag)))
+    (container (list "push"
+                     (~ "localhost/~a:latest" project-name)
+                     (~ "docker.io/jjba23/~a:~a" project-name tag))
+               #:verbose? #t)))
 
 (define (dev-run)
-  (time-machine-manifest-shell (list
-                                "guile -L ./src -c '((@(ΔΔ project-name ΔΔ main) main))'"
-                                "--resources ./resources")
+  (time-machine-manifest-shell (list "guile" "-L" "./src"
+                                     "-c" "'((@(ΔΔ project-name ΔΔ main) main))'"
+                                     "--resources" "./resources")
                                #:verbose? #t))
 
 (define (run)
@@ -93,14 +102,15 @@
   "Hot-reloading developer's setup."
   (time-machine-manifest-shell (list "watchexec"
                                      "--clear"
-                                     (~ "--exts ~a"
-                                        (string-join (map symbol->string
-                                                      hot-reload-file-types)
-                                                     ","))
+                                     "--exts"
+                                     (string-join (map symbol->string
+                                                       hot-reload-file-types)
+                                                  ",")
                                      "--on-busy-update=restart"
-                                     "--shell bash"
-                                     "--watch . --"
-                                     "maak dev-run")))
+                                     "--shell" "bash"
+                                     "--watch" "."
+                                     "--"
+                                     "maak" "dev-run")))
 
 (define (hr)
   "Alias to hot-reloading."
