@@ -17,6 +17,9 @@ If you like my work, please support me by [[https://bmc.link/jjbigorra][buying m
 -------------
 
 ** ~ΔΔ ... ΔΔ~ Expressions Inside Template Files
+:PROPERTIES:
+:CUSTOM_ID: expressions-inside-template-files
+:END:
 
 The use of the double greek capital letter delta is for maximum expressiveness, *visibility*, and to avoid any potential conflict with other templating languages.
 
@@ -67,6 +70,9 @@ skapa --template web-app --output my-new-app --project-name "My Awesome App"
 ---------
 
 * How It Works
+:PROPERTIES:
+:CUSTOM_ID: how-it-works
+:END:
 
 ~skapa~ is written entirely in [[https://www.gnu.org/software/guile][GNU Guile Scheme]]. It processes project templates using a powerful combining of flat-file copying and expressive Scheme evaluation.
 
@@ -81,6 +87,9 @@ Files inside the ~contents/~ directory can contain *$\Delta\Delta$ Expressions*.
 -------
 
 * Existing templates
+:PROPERTIES:
+:CUSTOM_ID: existing-templates
+:END:
 
 See [[file:resources/templates/][the ./resources/templates directory]] for more information about all the existing templates.
 
@@ -88,6 +97,9 @@ We have, among others simple READMEs, Kotlin Spring Boot, ZIO HTTP, Guile Scheme
 
 
 * Community Templates
+:PROPERTIES:
+:CUSTOM_ID: community-templates
+:END:
 
 ~skapa~ wants your templates! 🖐🏼
 
@@ -140,11 +152,86 @@ Expressive templates. Pure creation, so why stop at variables when your template
 
 --------
 
+* Ways to install
+:PROPERTIES:
+:CUSTOM_ID: ways-to-install
+:END:
+
+/Four routes to the same 0.0.4, from the most automated to the most manual.  They all build the tag this README documents./
+
+** From the Guix channel
+:PROPERTIES:
+:CUSTOM_ID: from-the-guix-channel
+:END:
+*GNU Guix* is the functional package manager this project is developed with: a build is a pure function of its inputs, so the same recipe gives the same result everywhere, and an upgrade that goes wrong can be rolled back.
+
+The jointhefreeworld channel carries ~skapa~ at 0.0.4, so a checkout of the channel is enough — no package definition to write:
+
+#+begin_src shell
+git clone https://codeberg.org/jjba23/guix-jointhefreeworld.git
+guix install -L ./guix-jointhefreeworld skapa
+#+end_src
+
+Add the channel to ~$HOME/.config/guix/channels.scm~ (the channel's README has the four lines) and a plain ~guix install skapa~ keeps working on every later ~guix pull~.
+
+** From the Nix flake
+:PROPERTIES:
+:CUSTOM_ID: from-the-nix-flake
+:END:
+*Nix* offers the same declarative, reproducible model with its own language, its own store and a binary cache, and it is a natural fit if the rest of your machine is already described in Nix.
+
+This project is not in the flake yet; the flake builds the projects that carry a Nix expression of their own.
+
+** As a container image
+:PROPERTIES:
+:CUSTOM_ID: as-a-container-image
+:END:
+*Podman or Docker* is the route that puts nothing on the host: the ~Dockerfile~ in this repository builds the project in a builder stage and copies only what it installed into a runtime stage, so the image is small and the host keeps its own toolchain untouched.
+
+#+begin_src shell
+podman build -t skapa .   # docker build -t skapa . also works
+podman run --rm -it skapa
+#+end_src
+
+The image's entry point is Guile, with skapa on its load path, which makes it useful for a quick try and for reproducing a bug on a clean system.
+
+** As a distribution package
+:PROPERTIES:
+:CUSTOM_ID: as-a-distribution-package
+:END:
+*Debian, openSUSE and Arch* each get the project through their own package manager.  Packaging lives in this repository under ~packaging/~ and is pinned to the same release tag, so the recipes and the sources they build are versioned together.
+
+None of the three archives ships skapa yet, so these are recipes to build rather than packages to install from a mirror:
+
+| Distribution   | Package | How to build it                                                                     |
+|----------------+---------+-------------------------------------------------------------------------------------|
+| Debian, Ubuntu | ~skapa~ | copy ~packaging/debian~ to the repository root, then ~dpkg-buildpackage -us -uc -b~ |
+| openSUSE       | ~skapa~ | ~osc build~ with ~packaging/opensuse~                                               |
+| Arch           | ~skapa~ | ~makepkg -si~ in ~packaging/arch~                                                   |
+
+Each recipe carries its own dependency list, so a missing library fails the build with its name rather than producing a package that cannot load.
+
+** Which one?
+:PROPERTIES:
+:CUSTOM_ID: which-one
+:END:
+- *Guix* if you want the toolchain the project is tested with, and the ability to roll back a bad upgrade.
+- *Nix* if the rest of your machine is already declarative; this flake does not carry the project yet, but the container image and the recipes below do.
+- *Container* if you only want to try the release, or reproduce a report on a machine that has nothing installed.
+- *Distribution package* if you want the project managed by the same tool as the rest of your system, with its licence, manual page and launcher in the usual places.
+
+
 * Installing
+:PROPERTIES:
+:CUSTOM_ID: installing
+:END:
 
 /Feel free to use it as you wish, within the terms of the GNU General Public License v3 or newer./
 
 ** On Guix
+:PROPERTIES:
+:CUSTOM_ID: on-guix
+:END:
 
 Requirements:
 - *Guix*: The Guix package manager will ensure a reproducible working software, and will manage all needed dependencies for you.
@@ -179,6 +266,9 @@ guix time-machine --channels=channels.scm -- \
 Skapa is available in upstream Guix as ~skapa~ in the module ~(gnu packages build-tools)~
 
 ** [TODO] On Podman/Docker
+:PROPERTIES:
+:CUSTOM_ID: todo-on-podmandocker
+:END:
 
 Skapa is also available as a Docker container, from DockerHub (also compatible with Podman).
 
@@ -196,6 +286,9 @@ Then you can run Skapa from the container, and bind your local filesystem to giv
 #+end_src
 
 ** On Nix
+:PROPERTIES:
+:CUSTOM_ID: on-nix
+:END:
 
 ~skapa~ also is packaged via Nix.
 
@@ -215,6 +308,9 @@ nix build
 
 
 * Licensing
+:PROPERTIES:
+:CUSTOM_ID: licensing
+:END:
 
 skapa and all of its source code are free software, licensed under the GNU Affero General Public License v3 (or newer at your convenience).
 
@@ -227,6 +323,9 @@ https://www.gnu.org/licenses/fdl-1.3.html
 ----------------------
 
 * AI Policy
+:PROPERTIES:
+:CUSTOM_ID: ai-policy
+:END:
 
 This project adheres to the [[https://jointhefreeworld.org/blog/articles/personal/jointhefreeworld-ai-policy/index.html][jointhefreeworld AI (Artificial Intelligence) policy]].
 
@@ -239,6 +338,9 @@ We require a human in the loop for all contributions. The use of autonomous AI a
 ----------
 
 * Code of conduct
+:PROPERTIES:
+:CUSTOM_ID: code-of-conduct
+:END:
 
 This project adheres to the jointhefreeworld code of conduct. Find it here:
 
@@ -249,6 +351,9 @@ In summary, we foster an inclusive, respectful, and cooperative environment for 
 ---------
 
 * Automation with Maak 🛠️
+:PROPERTIES:
+:CUSTOM_ID: automation-with-maak
+:END:
 
 This project uses [[https://codeberg.org/jjba23/maak][Maak]] for build automation, developer tooling, and task orchestration.
 
@@ -259,6 +364,9 @@ Most build systems invent their own limited, arcane domain-specific language (DS
 [[https://jointhefreeworld.org/ggg/dist/maak.svg]]
 
 ** Why Maak?
+:PROPERTIES:
+:CUSTOM_ID: why-maak
+:END:
 
 - *Power of Lisp λ*: Define tasks, build steps, data pipelines, or complex macros using real Lisp (Guile Scheme) without so much copy-pasting, no weird =.PHONY= rules, and no restrictive YAML syntax.
 - *Transparent Execution*: Built-in helpers like =$=, =log-info=, and =parameterize= make running shell commands and dry-runs clean and predictable.
@@ -271,6 +379,9 @@ Learn more about Maak and how to use it and install it on your system at [[https
 ----------
 
 * On Reproducibility: Why GNU Guix?
+:PROPERTIES:
+:CUSTOM_ID: on-reproducibility-why-gnu-guix
+:END:
 
 A build should never fail because "it worked on my machine." Reliable software development requires explicit, bit-for-bit reproducibility and a functional approach to package management and system deployment.
 
@@ -290,6 +401,9 @@ A build should never fail because "it worked on my machine." Reliable software d
 --------------
 
 ** Hacking around
+:PROPERTIES:
+:CUSTOM_ID: hacking-around
+:END:
 
 #+begin_src shell
 cd ../../ && maak run && cd  dist/kkk && chmod +x gradlew && just test
