@@ -20,7 +20,12 @@
   #:use-module (ice-9 string-fun)
   #:use-module (ice-9 textual-ports)
   #:use-module (ice-9 popen)
-  #:use-module (maak maak))
+  #:use-module (maak maak)
+  ;; The container helpers are imported under a prefix because the
+  ;; tasks below are named the way maak exposes them on the command
+  ;; line -- `maak container-build' -- and a task may not shadow the
+  ;; helper it calls.
+  #:use-module ((maak container) #:prefix ct:))
 
 ;; ====== Skapa file constants ======
 
@@ -95,7 +100,7 @@
 
 (define (push-docker-tag)
   "Push the locally generated Docker image to Dockerhub."
-  ($ '("git fetch --all"))
+  (git-fetch "--all")
   (let* ((latest-tag (syscall-with-output "git describe --tags --abbrev=0")))
     ($ (list (~ "podman push localhost/~a:latest" project-name)
              (~ "docker.io/jjba23/~a:~a" project-name latest-tag))
@@ -116,8 +121,8 @@
 
 (define (container-build)
   "Build the container image for skapa."
-  ($ '("podman build -t skapa .")))
+  (ct:container-build "." #:tag "skapa:latest" #:verbose? #t))
 
 (define (container-run)
   "Run the container image for skapa."
-  ($ '("podman run --rm -it skapa:latest")))
+  (ct:container-run "skapa" #:interactive? #t #:tty? #t #:verbose? #t))
