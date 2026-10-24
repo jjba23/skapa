@@ -1,0 +1,30 @@
+Source: skapa
+Section: devel
+Priority: optional
+Maintainer: Josep Bigorra <jjbigorra@gmail.com>
+# scriba is produced by the same packaging batch; build it first.
+Build-Depends:
+ debhelper-compat (= 13),
+ guile-3.0,
+ guile-3.0-dev,
+ pkg-config,
+ scriba
+Standards-Version: 4.6.2
+Homepage: https://codeberg.org/jjba23/skapa
+Vcs-Git: https://codeberg.org/jjba23/skapa.git
+Vcs-Browser: https://codeberg.org/jjba23/skapa
+Rules-Requires-Root: no
+
+Package: skapa
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+ guile-3.0,
+ scriba,
+ bash,
+ coreutils
+Description: Project scaffolding and templating wizard in Guile Scheme
+ Skapa scaffolds a new project from a template. Templates are written as
+ S-expressions and filled in interactively; the package ships templates for
+ Guile projects and the licenses they need, and more can be added.

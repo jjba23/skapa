@@ -111,3 +111,13 @@
   "Run skapa."
   (time-machine-program-shell (list "skapa")
                               #:verbose? #t))
+
+;; ====== Container tasks ======
+
+(define (container-build)
+  "Build the container image for skapa."
+  ($ '("podman build -t skapa .")))
+
+(define (container-run)
+  "Run the container image for skapa."
+  ($ '("podman run --rm -it skapa:latest")))
