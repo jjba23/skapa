@@ -16,9 +16,7 @@
 # along with ΔΔ project-name ΔΔ. If not, see <https://www.gnu.org/licenses/>.
 
 variables:
-  - &submit_job_image "docker.io/jjba23/byggsteg-woodpecker-submit-job:v0.1.32"
-  - &poll_job_image "docker.io/jjba23/byggsteg-woodpecker-poll-job:v0.1.32"
-  - &get_token_image "docker.io/jjba23/byggsteg-woodpecker-get-token:v0.1.32"
+  - &byggsteg_image "docker.io/jjba23/byggsteg-woodpecker:v0.3.0"
   - &jointhefreeworld_byggsteg_url "https://byggsteg.jointhefreeworld.org"
   - &main_branch "trunk"
 
@@ -31,11 +29,12 @@ clone:
 steps:
   get-byggsteg-token:
     name: "🔒 Get token @ Byggsteg"
-    image: *get_token_image
+    image: *byggsteg_image
     when:
       - event: [push]
         branch: [*main_branch]
     settings:
+      BYGGSTEG_STEP: get-token
       BYGGSTEG_EMAIL:
         from_secret: BYGGSTEG_EMAIL
       BYGGSTEG_PASSWORD:
@@ -44,11 +43,12 @@ steps:
 
   submit-byggsteg-job:
     name: "💼 Submit job @ Byggsteg"
-    image: *submit_job_image
+    image: *byggsteg_image
     when:
       - event: [push]
         branch: [*main_branch]
     settings:
+      BYGGSTEG_STEP: submit-job
       BYGGSTEG_URL: *jointhefreeworld_byggsteg_url
       BYGGSTEG_JOB_CODE: |
         (lambda()
@@ -59,9 +59,10 @@ steps:
 
   poll-byggsteg-job:
     name: "🔄 Poll job status @ Byggsteg"
-    image: *poll_job_image
+    image: *byggsteg_image
     when:
       - event: [push]
         branch: [*main_branch]
     settings:
+      BYGGSTEG_STEP: poll-job
       BYGGSTEG_URL: *jointhefreeworld_byggsteg_url
