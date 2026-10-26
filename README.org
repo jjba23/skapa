@@ -237,7 +237,16 @@ Requirements:
 - *Guix*: The Guix package manager will ensure a reproducible working software, and will manage all needed dependencies for you.
 -  *Guile Scheme:*  This entire program is written using the official GNU extension language, Guile Scheme.
 
-If you just want to quickly install it to your profile:
+If you just want to quickly install it to your profile, use the channels this
+project pins -- the jointhefreeworld channel carries the scriba release
+~guix.scm~ builds against, so the time-machine form always works:
+
+#+begin_src shell
+guix time-machine --channels=channels.scm -- package --install-from-file=./guix.scm
+#+end_src
+
+With the jointhefreeworld channel in ~$HOME/.config/guix/channels.scm~, the
+plain form works too:
 
 #+begin_src shell
 guix package --install-from-file=./guix.scm
@@ -333,7 +342,7 @@ Our core principle is simple: *AI should assist human creativity and problem-sol
 
 While tools like Large Language Models (LLMs) and interactive chatbots can be beneficial for reviewing, refactoring small functions, or acting as a sounding board, they should be used with moderation.
 
-We require a human in the loop for all contributions. The use of autonomous AI agents to automatically generate and submit pull requests to this project is strictly prohibited.
+We require a human in the loop for all contributions.
 
 ----------
 

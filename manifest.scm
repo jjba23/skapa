@@ -33,12 +33,17 @@
              (gnu packages texinfo)
              (gnu packages autotools)
              (gnu packages rust-apps)
+             ;; The channel pinned in channels.scm carries the release the
+             ;; collection is built against; the prefix keeps it apart from the
+             ;; older copies Guix itself carries.
+             ((jointhefreeworld packages guile)
+              #:prefix jtf:)
              ((guix licenses)
               #:prefix license:))
 
 (packages->manifest (list guile-3.0
                           texinfo
                           watchexec
-                          guile-scriba
+                          jtf:guile-scriba
                           guile-documenta
                           guile-ares-rs))

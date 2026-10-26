@@ -27,6 +27,10 @@
              (gnu packages linux)
              (gnu packages guile)
              (gnu packages guile-xyz)
+             ;; The release the channel in channels.scm pins, imported with a
+             ;; prefix so it cannot be confused with Guix's older copy.
+             ((jointhefreeworld packages guile)
+              #:prefix jtf:)
              (ice-9 match))
 
 (define %source-dir
@@ -65,7 +69,10 @@
                 (chmod (string-append bin "/skapa") #o755))))
           (add-after 'install-program-files 'wrap-program
             (lambda _
-              (let ((deps (list #$guile-scriba
+              ;; The channel's scriba is imported with a prefix, and a
+              ;; prefix-qualified name cannot be written as a `#$' unquote, so
+              ;; the long form is used here.
+              (let ((deps (list (ungexp jtf:guile-scriba)
                                 #$guile-json-4
                                 #$output)))
                 (wrap-program (string-append #$output "/bin/skapa")
@@ -96,7 +103,7 @@
                   bash-minimal
                   coreutils-minimal
                   util-linux
-                  guile-scriba
+                  jtf:guile-scriba
                   guile-json-4))
     (home-page "https://codeberg.org/jjba23/skapa")
     (synopsis "Interactive CLI wizard project scaffolder")
