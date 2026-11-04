@@ -7,12 +7,14 @@
 [[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]] [[https://jointhefreeworld.org/ggg/dist/maak.svg]]
 [[https://jointhefreeworld.org/ggg/dist/license-agpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]]
 
+#+attr_html: :width 160 :alt Skapa logo
+[[file:logo.svg]]
+
 Project scaffolding and templating tool with the power of Lisp.  Quick-start your new projects with many of the ready templates.
 
 Empowering you with S-expressions in the (double delta delimited) templates. Actively looking for contributions and community templates.
 
 If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee ☕]] so I can continue with a lot of motivation.
-
 
 -------------
 
@@ -54,7 +56,6 @@ The wizard will guide you through:
 
 ----------------------
 
-
 You can see all available options by running:
 
 #+BEGIN_SRC sh
@@ -83,7 +84,6 @@ Templates reside in the ~resources/templates/~ directory of the distribution (or
 
 Files inside the ~contents/~ directory can contain *$\Delta\Delta$ Expressions*. When running the wizard, ~skapa~ captures your answers, evaluates any Scheme code inside these expressions, and writes the transformed result to your new project directory.
 
-
 -------
 
 * Existing templates
@@ -94,7 +94,6 @@ Files inside the ~contents/~ directory can contain *$\Delta\Delta$ Expressions*.
 See [[file:resources/templates/][the ./resources/templates directory]] for more information about all the existing templates.
 
 We have, among others simple READMEs, Kotlin Spring Boot, ZIO HTTP, Guile Scheme CLI.
-
 
 * Community Templates
 :PROPERTIES:
@@ -138,9 +137,7 @@ Example Template Valg in Action, drop a new template folder with its own valg.sc
                (default . #t)))))
 #+end_src
 
-
 --------------
-
 
 #+begin_quote
 Delightfully dynamic project scaffolding in the Scheme-powered project initializer.
@@ -219,7 +216,6 @@ Each recipe carries its own dependency list, so a missing library fails the buil
 - *Nix* if the rest of your machine is already declarative; this flake does not carry the project yet, but the container image and the recipes below do.
 - *Container* if you only want to try the release, or reproduce a report on a machine that has nothing installed.
 - *Distribution package* if you want the project managed by the same tool as the rest of your system, with its licence, manual page and launcher in the usual places.
-
 
 * Installing
 :PROPERTIES:
@@ -315,7 +311,6 @@ nix build
 
 --------------
 
-
 * Licensing
 :PROPERTIES:
 :CUSTOM_ID: licensing
@@ -405,7 +400,6 @@ A build should never fail because "it worked on my machine." Reliable software d
 - *Time Travel:* Rebuild the exact system state from any point in git history using ~guix time-machine~.
 - *Atomic Operations:* Instantly upgrade or roll back environments without leaving orphaned dependencies or broken states.
 - *Unified Tooling:* One tool manages development shells, isolated containers, package builds, and full system configurations.
-
 
 --------------
 
