@@ -1,3 +1,9 @@
+skapa (0.0.11-1) unstable; urgency=medium
+
+  * Build against the jointhefreeworld collection at v1.0.4.
+
+ -- Josep Bigorra <jjbigorra@gmail.com>  Thu, 12 Nov 2026 15:33:42 +0000
+
 skapa (0.0.4-1) unstable; urgency=medium
 
   * Bump version for container and GNU/Linux packaging improvements.

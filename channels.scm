@@ -2,8 +2,8 @@
 ;;
 ;; Guix itself is pinned to a commit, and so is the jointhefreeworld channel:
 ;; the collection's packages - scriba among them - come from there rather than
-;; from the copies Guix carries, which lag behind the releases.  Guix's own
-;; guile-scriba is 0.3.3; the channel carries 0.4.5.
+;; from the copies Guix carries, which lag behind the releases.  The channel
+;; carries scriba 0.5.1.
 ;;
 ;; The channel comes after guix in the list, and manifest.scm and guix.scm
 ;; import its modules with a `jtf:' prefix, so which release a build gets is
@@ -13,7 +13,7 @@
         (name 'guix)
         (url "https://git.guix.gnu.org/guix.git")
         (branch "master")
-        (commit "973dbc8c00de826f3c38468b09519d30d064eea3")
+        (commit "3b4e87350015c5e5223bcfd5043837e63fd6d635")
         (introduction
          (make-channel-introduction "9edb3f66fd807b096b48283debdcddccfea34bad"
           (openpgp-fingerprint
@@ -22,9 +22,9 @@
         (name 'jointhefreeworld)
         (url "https://codeberg.org/jjba23/guix-jointhefreeworld")
         (branch "trunk")
-        ;; The release this project is built against: scriba 0.4.5, and the
+        ;; The release this project is built against: scriba 0.5.1, and the
         ;; rest of the collection, at the same revision.
-        (commit "ff4e138b39a2997bdd897775a33797bb51340106")
+        (commit "872c1e2ee0cee99e49472bfbfaf3a7e5975b1c2d")
         (introduction
          (make-channel-introduction
           "b0ac3f05075d7959860fc9e1db5871acddea3986"
