@@ -2,6 +2,7 @@
 
 (use-modules (guix packages)
              (gnu)
+             (gnu packages)
              (guix utils)
              (guix git-download)
              (guix download)
@@ -25,5 +26,5 @@
                           darkhttpd
                           texinfo
                           watchexec
-                          guile-documenta
+                          (specification->package "guile-dokgen")
                           guile-ares-rs))

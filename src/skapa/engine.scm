@@ -15,6 +15,40 @@
 ;; You should have received a copy of the GNU Affero General Public License
 ;; along with skapa. If not, see <https://www.gnu.org/licenses/>.
 
+;;; Commentary:
+;;
+;; The template engine: it takes one template directory and writes the project
+;; it describes.
+;;
+;; A template lives under resources/templates/NAME, and its contents directory
+;; is walked entry by entry.  Every name is rendered too, so a directory called
+;; after the project becomes a directory called after the new project.  Text
+;; files are read as UTF-8 and rendered; binary files are copied byte for byte,
+;; and so is a file that will not decode.  A text file is rendered by replacing
+;; every ΔΔ expression ΔΔ with the value it takes in the context, which is the
+;; answers the wizard collected merged with the project memory kept in
+;; .skapa.scm at the destination root.
+;;
+;; ```mermaid
+;; flowchart LR
+;;   contents["resources/templates/NAME/contents"] --> walk["render-template-directory: one entry at a time"]
+;;   answers["the wizard's answers"] --> context["merge-context: answers plus .skapa.scm"]
+;;   context --> walk
+;;   walk --> name["the entry's name, rendered"]
+;;   walk --> text["a text file, rendered"]
+;;   walk --> binary["a binary file, copied byte for byte"]
+;;   name --> project["the generated project"]
+;;   text --> project
+;;   binary --> project
+;; ```
+;;
+;; The walk is depth first and the destination is created on the way down, and
+;; .skapa.scm is written once, at the root, when the walk is over: it is what
+;; makes a second run against the same destination remember what it was already
+;; told.
+
+;;; Code:
+
 (define-module (skapa engine)
   #:declarative? #t
   #:use-module (ice-9 textual-ports)

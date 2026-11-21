@@ -2,6 +2,8 @@
 
 (define-module (maak)
   #:use-module (maak maak)
+  ;; `scandir' names the mermaid sources `maak diagrams' renders.
+  #:use-module (ice-9 ftw)
   #:declarative? #t)
 
 ;; ====== Maak constants ======
@@ -42,22 +44,61 @@
 
 (define (repl)
   "Development REPL."
-  (manifest-shell (list "guile" "-L" "./src"
-                        "-c" "'((@ (ares server) run-nrepl-server))'")))
+  ;; The shell is the pinned one because the manifest names guile-dokgen, which
+  ;; comes from the jointhefreeworld channel: the ambient Guix knows only the
+  ;; channels the user configured and would not resolve it.
+  (time-machine-manifest-shell (list "guile" "-L" "./src"
+                                     "-c" "'((@ (ares server) run-nrepl-server))'")))
 
 ;; A manifest shell joins the parts it is handed into one shell line, so each
 ;; argument is a part of its own and each command is a call of its own: a `&&'
 ;; would be one word inside a part, and a failure would be reported by the line
 ;; rather than by the step that failed.
 (define (docs)
-  "Generate technical API documentation for the project."
+  "Generate the project's API reference and render it as HTML."
   (delete-file-recursively "doc")
-  (time-machine-manifest-shell (list "documenta" "api"
-                                     (~ "./src/~a" project-name)))
-  (time-machine-manifest-shell (list "texi2any" "-v" "--html"
-                                     (~ "--css-ref=~a" api-docs-css-url)
-                                     "./doc/api/index.texi"))
-  (mv "./index" "./doc/api-dist"))
+  (time-machine-manifest-shell
+   (list "dokgen" "api"
+         "--destination" "doc/api"
+         (~ "./src/~a" project-name))
+   #:verbose? #t)
+  (mkdir-p "doc/api-dist")
+  ;; `--no-split' writes one page, so the stylesheet and the script the chapter
+  ;; points at, and the diagrams dokgen drew, all sit beside it.
+  (time-machine-manifest-shell
+   (list "texi2any" "-v" "--html" "--no-split"
+         (~ "--css-ref=~a" api-docs-css-url)
+         "-I" "doc/api"
+         "-c" (shell-quote
+               (string-append
+                "EXTRA_HEAD="
+                "<link rel=\"stylesheet\" href=\"dokgen.css\">"
+                "<script src=\"dokgen.js\" defer></script>"))
+         "-o" "doc/api-dist/index.html"
+         "./doc/api/index.texi")
+   #:verbose? #t)
+  (for-each (lambda (asset)
+              (when (file-exists? (~ "doc/api/~a" asset))
+                (cp (~ "doc/api/~a" asset) "doc/api-dist"
+                    #:force? #t #:verbose? #t)))
+            '("dokgen.css" "dokgen.js"))
+  (when (file-exists? "doc/api/diagrams")
+    (cp "doc/api/diagrams" "doc/api-dist" #:force? #t #:verbose? #t)))
+
+(define (diagrams)
+  "Render every mermaid source under resources/diagrams to the SVG beside it."
+  (for-each
+   (lambda (name)
+     (let* ((source (in-vicinity "resources/diagrams" name))
+            (image (string-append (string-drop-right source 4) ".svg")))
+       ((@ (maak maak) run)
+        (list "mmdc" "-i" source "-o" image
+              "--backgroundColor" "transparent")
+        #:verbose? #t)))
+   (scandir "resources/diagrams"
+            (lambda (name)
+              (and (not (member name '("." "..")))
+                   (string-suffix? ".mmd" name))))))
 
 (define (package-docker)
   "Build the project's container image."

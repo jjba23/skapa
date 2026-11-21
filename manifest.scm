@@ -17,6 +17,7 @@
 
 (use-modules (guix packages)
              (gnu)
+             (gnu packages)
              (guix utils)
              (guix git-download)
              (guix download)
@@ -45,5 +46,5 @@
                           texinfo
                           watchexec
                           jtf:guile-scriba
-                          guile-documenta
+                          (specification->package "guile-dokgen")
                           guile-ares-rs))

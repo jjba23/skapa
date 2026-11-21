@@ -1,0 +1,16 @@
+flowchart LR
+%% skapa --- one template directory, walked into a project
+%% SPDX-License-Identifier: MIT
+%% Copyright © Josep Bigorra <jjbigorra@gmail.com>
+%% Rendered to template-engine.svg by `maak diagrams'.  The same diagram sits in
+%% the `;;; Commentary:' block of src/skapa/engine.scm, which is where the API
+%% documentation picks it up.
+  contents["resources/templates/NAME/contents"] --> walk["render-template-directory: one entry at a time"]
+  answers["the wizard's answers"] --> context["merge-context: answers plus .skapa.scm"]
+  context --> walk
+  walk --> name["the entry's name, rendered"]
+  walk --> text["a text file, rendered"]
+  walk --> binary["a binary file, copied byte for byte"]
+  name --> project["the generated project"]
+  text --> project
+  binary --> project

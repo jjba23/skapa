@@ -84,6 +84,16 @@ Templates reside in the ~resources/templates/~ directory of the distribution (or
 
 Files inside the ~contents/~ directory can contain *$\Delta\Delta$ Expressions*. When running the wizard, ~skapa~ captures your answers, evaluates any Scheme code inside these expressions, and writes the transformed result to your new project directory.
 
+That walk, drawn:
+
+#+attr_html: :width 760 :alt Skapa's template engine: the wizard's answers and the project memory form a context, and the template directory is walked into the generated project
+[[file:resources/diagrams/template-engine.svg]]
+
+The diagram is generated from
+[[file:resources/diagrams/template-engine.mmd][resources/diagrams/template-engine.mmd]]
+by ~maak diagrams~.  The same diagram sits in the ~;;; Commentary:~ block of
+=(skapa engine)=, so it also reaches the API reference.
+
 -------
 
 * Existing templates
