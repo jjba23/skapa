@@ -24,7 +24,7 @@
 
 (packages->manifest (list guile-3.0
                           darkhttpd
-                          texinfo
+                          (specification->package "texinfo")
                           watchexec
                           (specification->package "guile-dokgen")
                           guile-ares-rs))

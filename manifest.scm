@@ -43,7 +43,7 @@
               #:prefix license:))
 
 (packages->manifest (list guile-3.0
-                          texinfo
+                          (specification->package "texinfo")
                           watchexec
                           jtf:guile-scriba
                           (specification->package "guile-dokgen")
