@@ -10,6 +10,8 @@
 #+attr_html: :width 160 :alt Skapa logo
 [[file:logo.svg]]
 
+- 📖 *API reference:* [[https://jointhefreeworld.org/api-docs/skapa/index.html][Skapa API reference]]
+
 Project scaffolding and templating tool with the power of Lisp.  Quick-start your new projects with many of the ready templates.
 
 Empowering you with S-expressions in the (double delta delimited) templates. Actively looking for contributions and community templates.
