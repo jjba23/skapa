@@ -1,0 +1,48 @@
+#+title: Changelog and News 📰
+#+author: Josep Bigorra
+#+email: jjbigorra@gmail.com
+#+options: toc:nil
+
+All notable changes to this project are documented in this file.  Changes are
+listed per release (tag), with what each one adds, fixes or removes.
+
+This project adheres loosely to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
+
+*[Unreleased]*
+
+Nothing yet.
+
+*[Released]*
+
+** v0.0.19 (2026-11-24)
+
+A licensing and pipeline release: skapa is MIT, and GitHub builds it.
+
+*** Licensing
+
+- skapa is relicensed under the MIT licence.  =LICENSE= replaces =COPYING=, and
+  no file still claims the GNU licences for this project.  The licence bodies
+  skapa generates projects with are untouched: =resources/licenses/gpl3= is what
+  a generated project asks for, not what skapa itself is under.
+- Every source file opens with a =SPDX-License-Identifier: MIT= header, so the
+  licence a file is under travels with the file.
+- The recipes follow: =guix.scm= and =default.nix= declare MIT, so do the Arch,
+  Debian and openSUSE recipes, =resources/help.txt= and the README.
+
+*** Packaging
+
+- The version string is unified at 0.0.19 in =default.nix= and the Arch, Debian
+  and openSUSE recipes, which had drifted apart.
+- The homepage, the source URLs and the container metadata point at
+  =github.com/jjba23/skapa=.
+- The Arch recipe installs =LICENSE= instead of =COPYING=.
+
+*** Continuous integration
+
+- GitHub Actions builds the container image, loads the modules and runs the
+  launcher on every push to =trunk= and every pull request.
+- A =v*= tag publishes a GitHub release whose notes are read out of this file.
+- The Woodpecker pipeline is gone; GitHub is the one that runs the build.
+
+Earlier releases, v0.0.1 to v0.0.18, predate this file; their notes are the git
+log.
