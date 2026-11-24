@@ -1,3 +1,9 @@
+skapa (0.0.21-1) unstable; urgency=medium
+
+  * Stop patching the launcher's readlink call twice in the Nix expression.
+
+ -- Josep Bigorra <jjbigorra@gmail.com>  Tue, 24 Nov 2026 16:20:00 +0100
+
 skapa (0.0.20-1) unstable; urgency=medium
 
   * Check the modules in CI instead of building the container image.

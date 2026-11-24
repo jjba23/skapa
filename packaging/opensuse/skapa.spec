@@ -20,7 +20,7 @@
 %global debug_package %{nil}
 
 Name:           skapa
-Version:        0.0.20
+Version:        0.0.21
 Release:        0
 Summary:        Project scaffolding and templating wizard in Guile Scheme
 License:        MIT

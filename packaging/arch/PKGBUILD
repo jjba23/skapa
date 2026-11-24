@@ -5,7 +5,7 @@
 
 # Maintainer: Josep Bigorra <jjbigorra@gmail.com>
 pkgname=skapa
-pkgver=0.0.20
+pkgver=0.0.21
 pkgrel=1
 pkgdesc="Project scaffolding and templating wizard in Guile Scheme"
 arch=('any')
