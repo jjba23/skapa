@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright © Josep Bigorra <jjbigorra@gmail.com>
 #
-# What this pipeline can check without a test suite is that the checkout still
-# builds and that the modules still load.  The container is the build that needs
-# neither a channel nor a host toolchain, so it is the one that runs here; the
-# Guix and Nix recipes are built by the people who install from them.
+# What this pipeline can check without a test suite is that every module still
+# compiles and loads: the launcher answers `--help` from a text file and never
+# reaches Guile, so loading `(skapa main)` is the check that fails when a file
+# stops compiling.  Guile, guile-json and scriba are what the modules need, and
+# scriba is pure Scheme, so the tarball is enough - the same release the
+# container image unpacks.
 
 name: CI
 
@@ -19,23 +21,25 @@ permissions:
   contents: read
 
 jobs:
-  container:
-    name: build the image and load the modules
+  modules:
+    name: the modules still load
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build the image
-        run: docker build -t skapa .
-
-      # The launcher answers `--help` from a text file, so the modules are
-      # loaded by hand: a file that no longer compiles fails here rather than in
-      # somebody's terminal.
-      - name: The modules still load
+      - name: Install Guile and guile-json
         run: |
-          docker run --rm --entrypoint guile skapa \
-            -L /usr/share/guile/site/3.0 \
-            -c '(use-modules (skapa main))'
+          sudo apt-get update
+          sudo apt-get install --yes guile-3.0 guile-json
 
-      - name: The launcher answers --help
-        run: docker run --rm skapa --help
+      - name: Unpack scriba
+        run: |
+          mkdir -p "$RUNNER_TEMP/scriba"
+          curl --silent --show-error --location \
+            https://codeberg.org/jjba23/scriba/archive/v0.4.1.tar.gz |
+            tar xz -C "$RUNNER_TEMP/scriba" --strip-components=1
+
+      - name: Load every module from the checkout
+        run: |
+          guile -L "$RUNNER_TEMP/scriba/src" -L src \
+            -c '(use-modules (skapa main))'
