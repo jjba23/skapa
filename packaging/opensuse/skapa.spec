@@ -20,11 +20,11 @@
 %global debug_package %{nil}
 
 Name:           skapa
-Version:        0.0.6
+Version:        0.0.19
 Release:        0
 Summary:        Project scaffolding and templating wizard in Guile Scheme
-License:        GPL-3.0-or-later
-URL:            https://codeberg.org/jjba23/skapa
+License:        MIT
+URL:            https://github.com/jjba23/skapa
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(guile-3.0)
 BuildRequires:  scriba
@@ -81,7 +81,7 @@ install -d "%{buildroot}%{_datadir}/skapa/resources"
 cp -r resources/. "%{buildroot}%{_datadir}/skapa/resources/"
 
 %files
-%license COPYING
+%license LICENSE
 %doc README.org
 %{_bindir}/skapa
 %dir %{_datadir}/guile

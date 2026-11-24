@@ -1,3 +1,8 @@
+;; skapa
+;;
+;; SPDX-License-Identifier: MIT
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
+
 ;;; The channels this project is built against.
 ;;
 ;; Guix itself is pinned to a commit, and so is the jointhefreeworld channel:

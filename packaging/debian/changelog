@@ -1,3 +1,12 @@
+skapa (0.0.19-1) unstable; urgency=medium
+
+  * Relicense the project under the MIT licence.
+  * Ship SPDX headers in every source file.
+  * Build the checkout on GitHub Actions and publish the release from there.
+  * Unify the version string across the Guix, Nix and distribution recipes.
+
+ -- Josep Bigorra <jjbigorra@gmail.com>  Tue, 24 Nov 2026 15:10:37 +0100
+
 skapa (0.0.11-1) unstable; urgency=medium
 
   * Build against the jointhefreeworld collection at v1.0.4.

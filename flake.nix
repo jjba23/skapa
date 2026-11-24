@@ -1,3 +1,8 @@
+# skapa
+#
+# SPDX-License-Identifier: MIT
+# Copyright © Josep Bigorra <jjbigorra@gmail.com>
+
 {
   description = "Interactive CLI wizard project scaffolder in Guile Scheme";
 

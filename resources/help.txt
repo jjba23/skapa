@@ -34,6 +34,6 @@ EXAMPLES:
   skapa --name core-engine --type p --owner "Longhouse Corp"
 
 -------------------------------------------------------------------------------
-Source Code: https://codeberg.org/jjba23/skapa
-License:     GNU AGPL v3 or newer
+Source Code: https://github.com/jjba23/skapa
+License:     MIT
 ===============================================================================

@@ -1,3 +1,8 @@
+# skapa
+#
+# SPDX-License-Identifier: MIT
+# Copyright © Josep Bigorra <jjbigorra@gmail.com>
+
 { lib
 , stdenv
 , guile
@@ -11,7 +16,7 @@
 
 stdenv.mkDerivation {
   pname = "skapa";
-  version = "0.0.6";
+  version = "0.0.19";
 
   src = ./.;
 
@@ -92,8 +97,8 @@ stdenv.mkDerivation {
 
   meta = with lib; {
     description = "Interactive CLI wizard project scaffolder written in Guile Scheme";
-    homepage = "https://codeberg.org/jjba23/skapa";
-    license = licenses.agpl3Plus;
+    homepage = "https://github.com/jjba23/skapa";
+    license = licenses.mit;
     mainProgram = "skapa";
     platforms = platforms.linux ++ platforms.darwin;
   };

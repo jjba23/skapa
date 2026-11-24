@@ -10,9 +10,9 @@ Build-Depends:
  pkg-config,
  scriba
 Standards-Version: 4.6.2
-Homepage: https://codeberg.org/jjba23/skapa
-Vcs-Git: https://codeberg.org/jjba23/skapa.git
-Vcs-Browser: https://codeberg.org/jjba23/skapa
+Homepage: https://github.com/jjba23/skapa
+Vcs-Git: https://github.com/jjba23/skapa.git
+Vcs-Browser: https://github.com/jjba23/skapa
 Rules-Requires-Root: no
 
 Package: skapa
