@@ -1,0 +1,41 @@
+# skapa
+#
+# SPDX-License-Identifier: MIT
+# Copyright © Josep Bigorra <jjbigorra@gmail.com>
+#
+# What this pipeline can check without a test suite is that the checkout still
+# builds and that the modules still load.  The container is the build that needs
+# neither a channel nor a host toolchain, so it is the one that runs here; the
+# Guix and Nix recipes are built by the people who install from them.
+
+name: CI
+
+on:
+  push:
+    branches: [trunk]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  container:
+    name: build the image and load the modules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t skapa .
+
+      # The launcher answers `--help` from a text file, so the modules are
+      # loaded by hand: a file that no longer compiles fails here rather than in
+      # somebody's terminal.
+      - name: The modules still load
+        run: |
+          docker run --rm --entrypoint guile skapa \
+            -L /usr/share/guile/site/3.0 \
+            -c '(use-modules (skapa main))'
+
+      - name: The launcher answers --help
+        run: docker run --rm skapa --help

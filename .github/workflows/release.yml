@@ -1,0 +1,50 @@
+# skapa
+#
+# SPDX-License-Identifier: MIT
+# Copyright © Josep Bigorra <jjbigorra@gmail.com>
+#
+# A `v*' tag is the release: the notes are read out of NEWS.org, and GitHub
+# serves the source archives the packaging recipes point at, so nothing else
+# is attached.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: publish the notes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The heading is `** v0.0.19 (2026-11-24)' and the body is everything
+      # up to the next release heading, so NEWS.org stays the only place the
+      # notes are written.  The two substitutions turn the Org markup a reader
+      # of the file expects into the Markdown a release page renders.
+      - name: Take the notes for this tag
+        run: |
+          awk -v tag="$GITHUB_REF_NAME" '
+            index($0, "** " tag) == 1 { inside = 1; next }
+            inside && index($0, "** ") == 1 { exit }
+            inside { print }
+          ' NEWS.org |
+            sed -E -e 's/^\*\*\* (.*)$/### \1/' \
+                   -e 's/=([^=[:space:]][^=]*)=/`\1`/g' > "$RUNNER_TEMP/notes.md"
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A re-run of the same tag rewrites the notes instead of failing on
+          # the release the first run already made.
+          gh release create "$GITHUB_REF_NAME" \
+            --title "skapa $GITHUB_REF_NAME" \
+            --notes-file "$RUNNER_TEMP/notes.md" ||
+          gh release edit "$GITHUB_REF_NAME" \
+            --notes-file "$RUNNER_TEMP/notes.md"
