@@ -16,7 +16,7 @@
 
 stdenv.mkDerivation {
   pname = "skapa";
-  version = "0.0.20";
+  version = "0.0.21";
 
   src = ./.;
 
@@ -76,10 +76,12 @@ stdenv.mkDerivation {
     cp scripts/skapa $out/bin/skapa
     chmod +x $out/bin/skapa
 
-    # Patch core system tool invocations inside scripts/skapa
+    # Patch the core system tools the launcher calls.  The shebang is not one
+    # of them: `patchShebangs' in fixupPhase already points it at bash, and a
+    # second `readlink' replacement here would rewrite the path the first one
+    # just wrote.
     substituteInPlace $out/bin/skapa \
       --replace-quiet "readlink " "${coreutils}/bin/readlink " \
-      --replace-quiet "readlink " "${bash}/bin/bash " \
       --replace-quiet "realpath " "${coreutils}/bin/realpath " \
       --replace-quiet "dirname " "${coreutils}/bin/dirname " \
       --replace-quiet "getopt " "${util-linux}/bin/getopt " \
